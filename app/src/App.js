@@ -76,7 +76,7 @@ function App() {
 
   let camera, scene, renderer, vrrenderer;
   let hueValues = [];
-  let vrHMD, vrHMDSensor;
+  //let vrHMD, vrHMDSensor;
 
   let mouseX = 0, mouseY = 0;
   let renderTargetWidth = window.innerWidth;
@@ -85,8 +85,8 @@ function App() {
   let windowHalfX = window.innerWidth / 2;
   let windowHalfY = window.innerHeight / 2;
 
-  let vrSupported = false;
-  let vrEnabled = false;
+  //let vrSupported = false;
+  //let vrEnabled = false;
   let isFullscreen = false;
 
   const init = () => {
@@ -116,6 +116,7 @@ function App() {
 
     // Setup renderer and effects
     renderer.setSize(renderTargetWidth, renderTargetHeight);
+    renderer.xr.enabled = true;
 
     spriteSize = Math.ceil(3 * renderTargetWidth / 1600);
 
@@ -175,44 +176,42 @@ function App() {
 
   }
 
-  const render = () => {
-    requestAnimationFrame(render);
+  const render = () => renderer.setAnimationLoop(() => {
+    // if (vrEnabled && vrHMDSensor) {
+    //   // get state
+    //   let state = vrHMDSensor.getState();
 
-    if (vrEnabled && vrHMDSensor) {
-      // get state
-      let state = vrHMDSensor.getState();
+    //   // if the position is reported use it
+    //   if (state.position) {
+    //     camera.position.set(state.position.x * 50,
+    //       state.position.y * 50,
+    //       state.position.z * 50 + SCALE_FACTOR / 2);
+    //   }
 
-      // if the position is reported use it
-      if (state.position) {
-        camera.position.set(state.position.x * 50,
-          state.position.y * 50,
-          state.position.z * 50 + SCALE_FACTOR / 2);
-      }
-
-      // if the orientation is reported use it
-      if (state.orientation) {
-        camera.quaternion.set(state.orientation.x,
-          state.orientation.y,
-          state.orientation.z,
-          state.orientation.w);
-      } else {
-        camera.lookAt(scene.position);
-      }
-    } else {
-      // move the camera position based on mouse position/taps
-      if (camera.position.x >= - CAMERA_BOUND && camera.position.x <= CAMERA_BOUND) {
-        camera.position.x += (mouseX - camera.position.x) * 0.05;
-        if (camera.position.x < - CAMERA_BOUND) camera.position.x = -CAMERA_BOUND;
-        if (camera.position.x > CAMERA_BOUND) camera.position.x = CAMERA_BOUND;
-      }
-      if (camera.position.y >= - CAMERA_BOUND && camera.position.y <= CAMERA_BOUND) {
-        camera.position.y += (- mouseY - camera.position.y) * 0.05;
-        if (camera.position.y < - CAMERA_BOUND) camera.position.y = -CAMERA_BOUND;
-        if (camera.position.y > CAMERA_BOUND) camera.position.y = CAMERA_BOUND;
-      }
-      // look straight ahead
-      camera.lookAt(scene.position);
+    //   // if the orientation is reported use it
+    //   if (state.orientation) {
+    //     camera.quaternion.set(state.orientation.x,
+    //       state.orientation.y,
+    //       state.orientation.z,
+    //       state.orientation.w);
+    //   } else {
+    //     camera.lookAt(scene.position);
+    //   }
+    // } else {
+    // move the camera position based on mouse position/taps
+    if (camera.position.x >= - CAMERA_BOUND && camera.position.x <= CAMERA_BOUND) {
+      camera.position.x += (mouseX - camera.position.x) * 0.05;
+      if (camera.position.x < - CAMERA_BOUND) camera.position.x = -CAMERA_BOUND;
+      if (camera.position.x > CAMERA_BOUND) camera.position.x = CAMERA_BOUND;
     }
+    if (camera.position.y >= - CAMERA_BOUND && camera.position.y <= CAMERA_BOUND) {
+      camera.position.y += (- mouseY - camera.position.y) * 0.05;
+      if (camera.position.y < - CAMERA_BOUND) camera.position.y = -CAMERA_BOUND;
+      if (camera.position.y > CAMERA_BOUND) camera.position.y = CAMERA_BOUND;
+    }
+    // look straight ahead
+    camera.lookAt(scene.position);
+    //}
 
     // update particle positions
     for (let i = 0; i < scene.children.length; i++) {
@@ -234,12 +233,21 @@ function App() {
     }
 
     // call the proper renderer
-    if (vrEnabled) {
-      vrrenderer.render(scene, camera);
-    } else {
-      renderer.render(scene, camera);
-    }
-  }
+    // if (vrEnabled) {
+    //   vrrenderer.render(scene, camera);
+    // } else {
+    renderer.render(scene, camera);
+    //}
+  })
+
+
+  // const render = () => {
+
+  //   //requestAnimationFrame(render);
+
+
+
+  // }
 
   ///////////////////////////////////////////////
   // Hopalong Orbit Generator
@@ -315,7 +323,7 @@ function App() {
     orbit.scaleY = scaleY;
 
     // find all points
-     const points = scene.children.filter(child => child.name === "particle-cloud");
+    const points = scene.children.filter(child => child.name === "particle-cloud");
 
     if (points.length === 0) {
       // Normalize vertex data
@@ -339,7 +347,7 @@ function App() {
             curSubset[i].vertex.x = vertexX
             curSubset[i].vertex.y = vertexY;
             // update existing points in orbit    
-            points[idx].geometry.attributes.position.setXY(i, vertexX, vertexY);        
+            points[idx].geometry.attributes.position.setXY(i, vertexX, vertexY);
           }
         }
       }
@@ -416,23 +424,23 @@ function App() {
     if (!document.webkitFullscreenElement && !document.mozFullScreenElement) {
       isFullscreen = false;
       canvasEl.current.style.cursor = "";
-      if (vrSupported) {
-        vrEnabled = false;
-        // unhide the mouse and set the device pixel ratio correctly
-        renderer.devicePixelRatio = window.devicePixelRatio || 1;
-      }
+      // if (vrSupported) {
+      //   vrEnabled = false;
+      //   // unhide the mouse and set the device pixel ratio correctly
+      //   renderer.devicePixelRatio = window.devicePixelRatio || 1;
+      // }
     } else {
       isFullscreen = true;
       canvasEl.current.style.cursor = "none";
-      if (vrSupported) {
-        vrEnabled = true;
-        // reset the sensor on enable
-        vrHMDSensor.zeroSensor();
-        // reset the camera position
-        camera.position.set(0, 0, SCALE_FACTOR / 2);
-        // hide the mouse, and set the device pixel ratio to 1
-        renderer.devicePixelRatio = 1;
-      }
+      // if (vrSupported) {
+      //   vrEnabled = true;
+      //   // reset the sensor on enable
+      //   vrHMDSensor.zeroSensor();
+      //   // reset the camera position
+      //   camera.position.set(0, 0, SCALE_FACTOR / 2);
+      //   // hide the mouse, and set the device pixel ratio to 1
+      //   renderer.devicePixelRatio = 1;
+      // }
     }
     // force resolution change
     onWindowResize();
@@ -445,18 +453,18 @@ function App() {
     windowHalfY = window.innerHeight / 2;
 
     // use recommended render target size if in VR
-    if (vrEnabled) {
-      if ('getRecommendedEyeRenderRect' in vrHMD) {
-        let leftEyeViewport = vrHMD.getRecommendedEyeRenderRect("left");
-        let rightEyeViewport = vrHMD.getRecommendedEyeRenderRect("right");
-        renderTargetWidth = leftEyeViewport.width + rightEyeViewport.width;
-        renderTargetHeight = Math.max(leftEyeViewport.height, rightEyeViewport.height);
-      }
-      // only scale the sprites to half the size for VR
-      spriteSize = Math.ceil(3 * renderTargetWidth / 3200);
-    } else {
-      spriteSize = Math.ceil(3 * renderTargetWidth / 1600);
-    }
+    // if (vrEnabled) {
+    //   if ('getRecommendedEyeRenderRect' in vrHMD) {
+    //     let leftEyeViewport = vrHMD.getRecommendedEyeRenderRect("left");
+    //     let rightEyeViewport = vrHMD.getRecommendedEyeRenderRect("right");
+    //     renderTargetWidth = leftEyeViewport.width + rightEyeViewport.width;
+    //     renderTargetHeight = Math.max(leftEyeViewport.height, rightEyeViewport.height);
+    //   }
+    //   // only scale the sprites to half the size for VR
+    //   spriteSize = Math.ceil(3 * renderTargetWidth / 3200);
+    // } else {
+    spriteSize = Math.ceil(3 * renderTargetWidth / 1600);
+    //}
 
     // rescale sprites for new resolution
     for (let i = 0; i < scene.children.length; i++) {
@@ -483,24 +491,25 @@ function App() {
   const onKeyPress = (event) => {
     // handle 'f'
     if (event.which === 70 || event.which === 102) {
-      if (vrEnabled || isFullscreen) {
+      //if (vrEnabled || isFullscreen) {
+      if (isFullscreen) {
         exitFullscreen();
-      } else if (vrSupported) {
-        if (canvasEl.current.mozRequestFullScreen) {
-          canvasEl.current.mozRequestFullScreen({
-            vrDisplay: vrHMD
-          });
-        } else if (canvasEl.current.webkitRequestFullscreen) {
-          canvasEl.current.webkitRequestFullscreen({
-            vrDisplay: vrHMD,
-          });
-        }
+        // } else if (vrSupported) {
+        //   if (canvasEl.current.mozRequestFullScreen) {
+        //     canvasEl.current.mozRequestFullScreen({
+        //       vrDisplay: vrHMD
+        //     });
+        //   } else if (canvasEl.current.webkitRequestFullscreen) {
+        //     canvasEl.current.webkitRequestFullscreen({
+        //       vrDisplay: vrHMD,
+        //     });
+        //   }
       } else {
         launchIntoFullscreen(canvasEl.current);
       }
-    } else if (vrEnabled && (event.which === 82 || event.which === 114)) {
-      // handle 'z'
-      vrHMDSensor.zeroSensor();
+      // } else if (vrEnabled && (event.which === 82 || event.which === 114)) {
+      //   // handle 'z'
+      //   vrHMDSensor.zeroSensor();
     }
   }
   ///
