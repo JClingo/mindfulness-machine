@@ -35,10 +35,11 @@ const E_MIN = 0;
 const E_MAX = 12;
 
 // Constants
-const SCALE_FACTOR = 1500;
+const SPRITE_SCALE_FACTOR = 800;
+const SCALE_FACTOR = 1600;
 const CAMERA_BOUND = 200;
 
-const NUM_POINTS_SUBSET = 20000;
+const NUM_POINTS_SUBSET = 25000;
 const NUM_SUBSETS = 7;
 
 const NUM_LEVELS = 10;
@@ -54,7 +55,7 @@ function App() {
   const canvasEl = useRef(null);
 
 
-  let speed = 4.0;
+  let speed = 2.0;
   let rotationSpeed = -0.004;
   let currentOrbit = useRef({
     // params
@@ -78,7 +79,7 @@ function App() {
     animate();
   })
 
-  const spriteSize = useRef(Math.ceil(3 * window.innerWidth / 1600));
+  const spriteSize = useRef(Math.ceil(3 * window.innerWidth / SPRITE_SCALE_FACTOR));
 
   const camera = useRef(null);
   const scene = useRef(null);
@@ -107,7 +108,7 @@ function App() {
     const orbit = { ...currentOrbit.current };
 
     scene.current = new Scene();
-    scene.current.fog = new FogExp2(0x000000, 0.00025);
+    scene.current.fog = new FogExp2(0x000000, 0.0012);
 
     // Initialize data points
     for (let i = 0; i < NUM_SUBSETS; i++) {
@@ -126,6 +127,7 @@ function App() {
       canvas: canvasEl.current,
       clearColor: 0x000000,
       clearAlpha: 1,
+      //antialias: true,
       devicePixelRatio: window.devicePixelRatio || 1,
       powerPreference: "high-performance"
     });
@@ -177,7 +179,7 @@ function App() {
 
     spriteSize.current = Math.ceil(3 * renderTargetWidth / 1600);
 
-    const sprite1 = new TextureLoader().load('galaxy.png');
+    const sprite1 = new TextureLoader().load('spiral-galaxy.svg');
 
     camera.current = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCALE_FACTOR);
     camera.current.position.set(0, 0, SCALE_FACTOR / 2);
