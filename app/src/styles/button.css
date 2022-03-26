@@ -1,0 +1,28 @@
+button {
+    cursor: pointer;
+    left: calc(50% - 50px);
+    width: 100px;
+    opacity: 0.5;
+    position: absolute;
+    bottom: 20px;
+    padding: 12px 6px;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.1);
+    color: #fff;
+    text-align: center;
+    outline: 'none';
+    z-index: 999;
+}
+
+button:hover {
+    opacity: 1;
+}
+
+button.disabled {
+    cursor: default;
+}
+
+button.hidden {
+    display: none;
+}

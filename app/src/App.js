@@ -12,8 +12,15 @@ import {
   Color,
   Points,
   PointsMaterial,
-  AdditiveBlending
+  AdditiveBlending,
+  Float32BufferAttribute,
+  LineBasicMaterial,
+  Line
 } from "three";
+
+import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+
+import { VRButton } from './components/VRButton';
 
 // Orbit parameters constraints
 const A_MIN = -30;
@@ -46,9 +53,10 @@ function App() {
 
   const canvasEl = useRef(null);
 
+
   let speed = 4.0;
   let rotationSpeed = -0.004;
-  let currentOrbit = {
+  let currentOrbit = useRef({
     // params
     a: 0,
     b: 0,
@@ -63,18 +71,23 @@ function App() {
     yMax: 0,
     scaleX: 0,
     scaleY: 0
-  };
+  });
 
   useEffect(() => {
     init();
-    render();
+    animate();
   })
 
-  // TODO: UseRefs
-  let spriteSize = Math.ceil(3 * window.innerWidth / 1600);
+  const spriteSize = useRef(Math.ceil(3 * window.innerWidth / 1600));
+
+  const camera = useRef(null);
+  const scene = useRef(null);
+  const renderer = useRef(null);
+
+  const controller1 = useRef(null)
+  const controllerGrip1 = useRef(null);
 
 
-  let camera, scene, renderer, vrrenderer;
   let hueValues = [];
   //let vrHMD, vrHMDSensor;
 
@@ -86,12 +99,15 @@ function App() {
   let windowHalfY = window.innerHeight / 2;
 
   //let vrSupported = false;
-  //let vrEnabled = false;
+  const vrEnabled = useRef(false);
   let isFullscreen = false;
 
   const init = () => {
 
-    const orbit = { ...currentOrbit };
+    const orbit = { ...currentOrbit.current };
+
+    scene.current = new Scene();
+    scene.current.fog = new FogExp2(0x000000, 0.00025);
 
     // Initialize data points
     for (let i = 0; i < NUM_SUBSETS; i++) {
@@ -106,7 +122,7 @@ function App() {
       orbit.subsets.push(subsetPoints);
     }
 
-    renderer = new WebGLRenderer({
+    renderer.current = new WebGLRenderer({
       canvas: canvasEl.current,
       clearColor: 0x000000,
       clearAlpha: 1,
@@ -114,21 +130,61 @@ function App() {
       powerPreference: "high-performance"
     });
 
-    // Setup renderer and effects
-    renderer.setSize(renderTargetWidth, renderTargetHeight);
-    renderer.xr.enabled = true;
+    renderer.current.setSize(renderTargetWidth, renderTargetHeight);
+    renderer.current.xr.enabled = true;
 
-    spriteSize = Math.ceil(3 * renderTargetWidth / 1600);
+
+    // set up controllers
+
+    function onSelectStart() {
+
+      this.userData.isSelecting = true;
+    }
+
+    function onSelectEnd() {
+
+      this.userData.isSelecting = false;
+    }
+
+    // controller1.current = renderer.current.xr.getController(0);
+    // controller1.current.addEventListener('selectstart', onSelectStart);
+    // controller1.current.addEventListener('selectend', onSelectEnd);
+    // controller1.current.addEventListener('connected', function (event) {
+
+    //   this.add(buildController(event.data));
+
+    // });
+    // controller1.current.addEventListener('disconnected', function () {
+
+    //   this.remove(this.children[0]);
+
+    // });
+    // scene.current.add(controller1.current);
+
+    // // The XRControllerModelFactory will automatically fetch controller models
+    // // that match what the user is holding as closely as possible. The models
+    // // should be attached to the object returned from getControllerGrip in
+    // // order to match the orientation of the held device.
+
+    // const controllerModelFactory = new XRControllerModelFactory();
+
+    // controllerGrip1.current = renderer.current.xr.getControllerGrip(0);
+    // controllerGrip1.current.add(controllerModelFactory.createControllerModel(controllerGrip1.current));
+    // scene.current.add(controllerGrip1.current);
+
+
+    // set up effects and scene objects
+
+    spriteSize.current = Math.ceil(3 * renderTargetWidth / 1600);
 
     const sprite1 = new TextureLoader().load('galaxy.png');
 
-    camera = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCALE_FACTOR);
-    camera.position.set(0, 0, SCALE_FACTOR / 2);
+    camera.current = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCALE_FACTOR);
+    camera.current.position.set(0, 0, SCALE_FACTOR / 2);
 
-    scene = new Scene();
-    scene.fog = new FogExp2(0x000000, 0.00025);
+    
 
-    currentOrbit = generateAndUpdateOrbit(orbit);
+    currentOrbit.current = generateAndUpdateOrbit(orbit);
 
     const pointColor = new Color();
 
@@ -142,7 +198,7 @@ function App() {
         let geometry = new BufferGeometry().setFromPoints(points);
         pointColor.setHSL(hueValues[s], DEF_SATURATION, DEF_BRIGHTNESS);
         let pointsMaterial = new PointsMaterial({
-          size: (spriteSize),
+          size: spriteSize.current,
           map: sprite1,
           blending: AdditiveBlending,
           depthTest: false,
@@ -158,7 +214,7 @@ function App() {
         particles.position.z = - LEVEL_DEPTH * k - (s * LEVEL_DEPTH / NUM_SUBSETS) + SCALE_FACTOR / 2;
         particles.needsUpdate = 0;
         particles.name = 'particle-cloud';
-        scene.add(particles);
+        scene.current.add(particles);
       }
     }
 
@@ -172,82 +228,143 @@ function App() {
     window.addEventListener('keypress', onKeyPress, false);
     window.addEventListener('keydown', onKeyDown, false);
 
-    setInterval(updateOrbit, 7000);
+    setInterval(updateOrbit, 4000);
 
   }
 
-  const render = () => renderer.setAnimationLoop(() => {
+  function buildController(data) {
+
+    let geometry, material;
+
+    switch (data.targetRayMode) {
+
+      case 'tracked-pointer':
+
+        geometry = new BufferGeometry();
+        geometry.setAttribute('position', new Float32BufferAttribute([0, 0, 0, 0, 0, - 1], 3));
+        geometry.setAttribute('color', new Float32BufferAttribute([0.5, 0.5, 0.5, 0, 0, 0], 3));
+
+        material = new LineBasicMaterial({ vertexColors: true, blending: AdditiveBlending });
+
+        return new Line(geometry, material);
+
+      // case 'gaze':
+
+      //   geometry = new RingGeometry( 0.02, 0.04, 32 ).translate( 0, 0, - 1 );
+      //   material = new MeshBasicMaterial( { opacity: 0.5, transparent: true } );
+      //   return new Mesh( geometry, material );
+
+    }
+
+  }
+
+  function handleController( controller ) {
+
+    if ( controller.userData.isSelecting ) {
+
+
+      console.log(controller);
+
+      //mouseX = event.clientX - windowHalfX;
+      //mouseY = event.clientY - windowHalfY;
+
+      // const object = room.children[ count ++ ];
+
+      // object.position.copy( controller.position );
+      // object.userData.velocity.x = ( Math.random() - 0.5 ) * 3;
+      // object.userData.velocity.y = ( Math.random() - 0.5 ) * 3;
+      // object.userData.velocity.z = ( Math.random() - 9 );
+      // object.userData.velocity.applyQuaternion( controller.quaternion );
+
+      // if ( count === room.children.length ) count = 0;
+
+
+
+    }
+
+  }
+
+  const animate = () => {
+    renderer.current.setAnimationLoop(render);
+  }
+
+  const render = () => {
+
+    //handleController( controller1.current );
+
     // if (vrEnabled && vrHMDSensor) {
     //   // get state
     //   let state = vrHMDSensor.getState();
 
     //   // if the position is reported use it
     //   if (state.position) {
-    //     camera.position.set(state.position.x * 50,
+    //     camera.current.position.set(state.position.x * 50,
     //       state.position.y * 50,
     //       state.position.z * 50 + SCALE_FACTOR / 2);
     //   }
 
     //   // if the orientation is reported use it
     //   if (state.orientation) {
-    //     camera.quaternion.set(state.orientation.x,
+    //     camera.current.quaternion.set(state.orientation.x,
     //       state.orientation.y,
     //       state.orientation.z,
     //       state.orientation.w);
     //   } else {
-    //     camera.lookAt(scene.position);
+    //     camera.current.lookAt(scene.current.position);
     //   }
     // } else {
     // move the camera position based on mouse position/taps
-    if (camera.position.x >= - CAMERA_BOUND && camera.position.x <= CAMERA_BOUND) {
-      camera.position.x += (mouseX - camera.position.x) * 0.05;
-      if (camera.position.x < - CAMERA_BOUND) camera.position.x = -CAMERA_BOUND;
-      if (camera.position.x > CAMERA_BOUND) camera.position.x = CAMERA_BOUND;
+    if (camera.current.position.x >= - CAMERA_BOUND && camera.current.position.x <= CAMERA_BOUND) {
+      camera.current.position.x += (mouseX - camera.current.position.x) * 0.05;
+      if (camera.current.position.x < - CAMERA_BOUND) camera.current.position.x = -CAMERA_BOUND;
+      if (camera.current.position.x > CAMERA_BOUND) camera.current.position.x = CAMERA_BOUND;
     }
-    if (camera.position.y >= - CAMERA_BOUND && camera.position.y <= CAMERA_BOUND) {
-      camera.position.y += (- mouseY - camera.position.y) * 0.05;
-      if (camera.position.y < - CAMERA_BOUND) camera.position.y = -CAMERA_BOUND;
-      if (camera.position.y > CAMERA_BOUND) camera.position.y = CAMERA_BOUND;
+    if (camera.current.position.y >= - CAMERA_BOUND && camera.current.position.y <= CAMERA_BOUND) {
+      camera.current.position.y += (- mouseY - camera.current.position.y) * 0.05;
+      if (camera.current.position.y < - CAMERA_BOUND) camera.current.position.y = -CAMERA_BOUND;
+      if (camera.current.position.y > CAMERA_BOUND) camera.current.position.y = CAMERA_BOUND;
     }
     // look straight ahead
-    camera.lookAt(scene.position);
+    camera.current.lookAt(scene.current.position);
     //}
 
-    // update particle positions
-    for (let i = 0; i < scene.children.length; i++) {
-      scene.children[i].position.z += speed;
-      scene.children[i].rotation.z += rotationSpeed;
-      // if the particle level has passed the fade distance
-      if (scene.children[i].position.z >= ((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH + SCALE_FACTOR) {
-        // move the particle level back in front of the camera
-        scene.children[i].position.z = -((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH;
-        if (scene.children[i].needsUpdate === 1) {
-          // update the geometry and color
-          scene.children[i].geometry.attributes.position.needsUpdate = true;
+    const points = scene.current.children.filter(child => child.name === "particle-cloud");
 
-          scene.children[i].myMaterial.color.setHSL(hueValues[scene.children[i].mySubset], DEF_SATURATION, DEF_BRIGHTNESS);
-          scene.children[i].needsUpdate = 0;
+    // update particle positions
+    for (let i = 0; i < points.length; i++) {
+      points[i].position.z += speed;
+      points[i].rotation.z += rotationSpeed;
+      // if the particle level has passed the fade distance
+      if (points[i].position.z >= ((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH + SCALE_FACTOR) {
+        // move the particle level back in front of the camera
+        points[i].position.z = -((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH;
+        if (points[i].needsUpdate === 1) {
+          // update the geometry and color
+          points[i].geometry.attributes.position.needsUpdate = true;
+
+          points[i].myMaterial.color.setHSL(hueValues[points[i].mySubset], DEF_SATURATION, DEF_BRIGHTNESS);
+          points[i].needsUpdate = 0;
 
         }
       }
     }
 
-    // call the proper renderer
-    // if (vrEnabled) {
-    //   vrrenderer.render(scene, camera);
-    // } else {
-    renderer.render(scene, camera);
-    //}
-  })
+    renderer.current.render(scene.current, camera.current);
 
+  }
 
-  // const render = () => {
+  const onSetVRSession = async (session) => {
+    vrEnabled.current = true;
+    //init();
+    await renderer.current.xr.setSession(session);
+  }
 
-  //   //requestAnimationFrame(render);
+  const onEndVRSession = (session) => {
+    vrEnabled.current = false;
+    init();
 
+  }
 
-
-  // }
 
   ///////////////////////////////////////////////
   // Hopalong Orbit Generator
@@ -257,10 +374,11 @@ function App() {
     for (let s = 0; s < NUM_SUBSETS; s++) {
       hueValues[s] = Math.random();
     }
-    for (let i = 0; i < scene.children.length; i++) {
-      scene.children[i].needsUpdate = 1;
+    const points = scene.current.children.filter(child => child.name === "particle-cloud");
+    for (let i = 0; i < points.length; i++) {
+      points[i].needsUpdate = 1;
     }
-    currentOrbit = generateAndUpdateOrbit({ ...currentOrbit });
+    currentOrbit.current = generateAndUpdateOrbit({ ...currentOrbit.current });
 
 
   }
@@ -323,7 +441,7 @@ function App() {
     orbit.scaleY = scaleY;
 
     // find all points
-    const points = scene.children.filter(child => child.name === "particle-cloud");
+    const points = scene.current.children.filter(child => child.name === "particle-cloud");
 
     if (points.length === 0) {
       // Normalize vertex data
@@ -437,7 +555,7 @@ function App() {
       //   // reset the sensor on enable
       //   vrHMDSensor.zeroSensor();
       //   // reset the camera position
-      //   camera.position.set(0, 0, SCALE_FACTOR / 2);
+      //   camera.current.position.set(0, 0, SCALE_FACTOR / 2);
       //   // hide the mouse, and set the device pixel ratio to 1
       //   renderer.devicePixelRatio = 1;
       // }
@@ -461,23 +579,25 @@ function App() {
     //     renderTargetHeight = Math.max(leftEyeViewport.height, rightEyeViewport.height);
     //   }
     //   // only scale the sprites to half the size for VR
-    //   spriteSize = Math.ceil(3 * renderTargetWidth / 3200);
+    //   spriteSize.current = Math.ceil(3 * renderTargetWidth / 3200);
     // } else {
-    spriteSize = Math.ceil(3 * renderTargetWidth / 1600);
+    spriteSize.current = Math.ceil(3 * renderTargetWidth / 1600);
     //}
 
+    const points = scene.current.children.filter(child => child.name === "particle-cloud");
+
     // rescale sprites for new resolution
-    for (let i = 0; i < scene.children.length; i++) {
-      scene.children[i].myMaterial.size = spriteSize;
+    for (let i = 0; i < points.length; i++) {
+      points[i].myMaterial.size = spriteSize.current;
     }
 
     // update camera
-    camera.aspect = renderTargetWidth / renderTargetHeight;
-    camera.updateProjectionMatrix();
+    camera.current.aspect = renderTargetWidth / renderTargetHeight;
+    camera.current.updateProjectionMatrix();
 
     // change render target size
-    renderer.setSize(renderTargetWidth, renderTargetHeight);
-    renderer.setViewport(0, 0, renderTargetWidth, renderTargetHeight);
+    renderer.current.setSize(renderTargetWidth, renderTargetHeight);
+    renderer.current.setViewport(0, 0, renderTargetWidth, renderTargetHeight);
   }
 
   const onKeyDown = (event) => {
@@ -517,6 +637,7 @@ function App() {
   return (
     <div className="App">
       <canvas ref={canvasEl}></canvas>
+      {<VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
     </div>
   );
 }
