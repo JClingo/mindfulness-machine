@@ -85,8 +85,10 @@ function App() {
   const scene = useRef(null);
   const renderer = useRef(null);
 
-  const controller1 = useRef(null)
+  const controller1 = useRef(null);
+  const controller2 = useRef(null)
   const controllerGrip1 = useRef(null);
+  const controllerGrip2 = useRef(null);
 
 
   let hueValues = [];
@@ -148,31 +150,43 @@ function App() {
       this.userData.isSelecting = false;
     }
 
-    // controller1.current = renderer.current.xr.getController(0);
-    // controller1.current.addEventListener('selectstart', onSelectStart);
-    // controller1.current.addEventListener('selectend', onSelectEnd);
-    // controller1.current.addEventListener('connected', function (event) {
+    controller1.current = renderer.current.xr.getController(0);
+    controller1.current.addEventListener('selectstart', onSelectStart);
+    controller1.current.addEventListener('selectend', onSelectEnd);
+    controller1.current.addEventListener('connected', function (event) {
+      this.add(buildController(event.data));
+    });
+    controller1.current.addEventListener('disconnected', function () {
+      this.remove(this.children[0]);
+    });
 
-    //   this.add(buildController(event.data));
+    controller2.current = renderer.current.xr.getController(1);
+    controller2.current.addEventListener('selectstart', onSelectStart);
+    controller2.current.addEventListener('selectend', onSelectEnd);
+    controller2.current.addEventListener('connected', function (event) {
+      this.add(buildController(event.data));
+    });
+    controller2.current.addEventListener('disconnected', function () {
+      this.remove(this.children[0]);
+    });
 
-    // });
-    // controller1.current.addEventListener('disconnected', function () {
+    scene.current.add(controller1.current);
+    scene.current.add(controller2.current);
 
-    //   this.remove(this.children[0]);
+    // The XRControllerModelFactory will automatically fetch controller models
+    // that match what the user is holding as closely as possible. The models
+    // should be attached to the object returned from getControllerGrip in
+    // order to match the orientation of the held device.
 
-    // });
-    // scene.current.add(controller1.current);
+    const controllerModelFactory = new XRControllerModelFactory();
 
-    // // The XRControllerModelFactory will automatically fetch controller models
-    // // that match what the user is holding as closely as possible. The models
-    // // should be attached to the object returned from getControllerGrip in
-    // // order to match the orientation of the held device.
+    controllerGrip1.current = renderer.current.xr.getControllerGrip(0);
+    controllerGrip1.current.add(controllerModelFactory.createControllerModel(controllerGrip1.current));
+    scene.current.add(controllerGrip1.current);
 
-    // const controllerModelFactory = new XRControllerModelFactory();
-
-    // controllerGrip1.current = renderer.current.xr.getControllerGrip(0);
-    // controllerGrip1.current.add(controllerModelFactory.createControllerModel(controllerGrip1.current));
-    // scene.current.add(controllerGrip1.current);
+    controllerGrip2.current = renderer.current.xr.getControllerGrip(1);
+    controllerGrip2.current.add(controllerModelFactory.createControllerModel(controllerGrip2.current));
+    scene.current.add(controllerGrip2.current);
 
 
     // set up effects and scene objects
@@ -183,8 +197,6 @@ function App() {
 
     camera.current = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCALE_FACTOR);
     camera.current.position.set(0, 0, SCALE_FACTOR / 2);
-
-    
 
     currentOrbit.current = generateAndUpdateOrbit(orbit);
 
@@ -260,12 +272,14 @@ function App() {
 
   }
 
-  function handleController( controller ) {
+  function handleController(controller) {
 
-    if ( controller.userData.isSelecting ) {
+    if (controller.userData.isSelecting) {
 
 
-      console.log(controller);
+      //console.log(controller);
+
+
 
       //mouseX = event.clientX - windowHalfX;
       //mouseY = event.clientY - windowHalfY;
@@ -292,42 +306,50 @@ function App() {
 
   const render = () => {
 
-    //handleController( controller1.current );
+    //handleController(controller1.current);
 
-    // if (vrEnabled && vrHMDSensor) {
+    // if (vrEnabled.current) {
     //   // get state
-    //   let state = vrHMDSensor.getState();
+    //   //let state = vrHMDSensor.getState();
+    //   console.log(controller1.current.quaternion.x);
+    //   const state = controller1.current;
+
 
     //   // if the position is reported use it
-    //   if (state.position) {
-    //     camera.current.position.set(state.position.x * 50,
-    //       state.position.y * 50,
-    //       state.position.z * 50 + SCALE_FACTOR / 2);
-    //   }
+    //   // if (state.position) {
+
+    //   //camera.current.position.x = state.position.x * CAMERA_BOUND;
+    //   camera.current.position.set(state.position.x * CAMERA_BOUND,
+    //     state.position.y * CAMERA_BOUND,
+    //     state.position.z * CAMERA_BOUND + SCALE_FACTOR / 2);
+      
 
     //   // if the orientation is reported use it
-    //   if (state.orientation) {
-    //     camera.current.quaternion.set(state.orientation.x,
-    //       state.orientation.y,
-    //       state.orientation.z,
-    //       state.orientation.w);
-    //   } else {
-    //     camera.current.lookAt(scene.current.position);
-    //   }
+    //   // if (state.orientation) {
+    //   camera.current.quaternion.set(state.quaternion.x,
+    //     state.quaternion.y * 100,
+    //     state.quaternion.z * 100,
+    //     state.quaternion.w * 100);
+    //   // } else {
+    //   //   camera.current.lookAt(scene.current.position);
+    //   // }
+
+    //   //camera.current.lookAt(scene.current.position);
+
     // } else {
-    // move the camera position based on mouse position/taps
-    if (camera.current.position.x >= - CAMERA_BOUND && camera.current.position.x <= CAMERA_BOUND) {
-      camera.current.position.x += (mouseX - camera.current.position.x) * 0.05;
-      if (camera.current.position.x < - CAMERA_BOUND) camera.current.position.x = -CAMERA_BOUND;
-      if (camera.current.position.x > CAMERA_BOUND) camera.current.position.x = CAMERA_BOUND;
-    }
-    if (camera.current.position.y >= - CAMERA_BOUND && camera.current.position.y <= CAMERA_BOUND) {
-      camera.current.position.y += (- mouseY - camera.current.position.y) * 0.05;
-      if (camera.current.position.y < - CAMERA_BOUND) camera.current.position.y = -CAMERA_BOUND;
-      if (camera.current.position.y > CAMERA_BOUND) camera.current.position.y = CAMERA_BOUND;
-    }
-    // look straight ahead
-    camera.current.lookAt(scene.current.position);
+      // move the camera position based on mouse position/taps
+      if (camera.current.position.x >= - CAMERA_BOUND && camera.current.position.x <= CAMERA_BOUND) {
+        camera.current.position.x += (mouseX - camera.current.position.x) * 0.05;
+        if (camera.current.position.x < - CAMERA_BOUND) camera.current.position.x = -CAMERA_BOUND;
+        if (camera.current.position.x > CAMERA_BOUND) camera.current.position.x = CAMERA_BOUND;
+      }
+      if (camera.current.position.y >= - CAMERA_BOUND && camera.current.position.y <= CAMERA_BOUND) {
+        camera.current.position.y += (- mouseY - camera.current.position.y) * 0.05;
+        if (camera.current.position.y < - CAMERA_BOUND) camera.current.position.y = -CAMERA_BOUND;
+        if (camera.current.position.y > CAMERA_BOUND) camera.current.position.y = CAMERA_BOUND;
+      }
+      // look straight ahead
+      camera.current.lookAt(scene.current.position);
     //}
 
     const points = scene.current.children.filter(child => child.name === "particle-cloud");
@@ -350,7 +372,7 @@ function App() {
         }
       }
     }
-
+    
     renderer.current.render(scene.current, camera.current);
 
   }
@@ -359,6 +381,7 @@ function App() {
     vrEnabled.current = true;
     //init();
     await renderer.current.xr.setSession(session);
+    camera.current = renderer.current.xr.getCamera();
   }
 
   const onEndVRSession = (session) => {
