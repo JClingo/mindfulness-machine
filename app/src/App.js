@@ -1,6 +1,5 @@
 import './App.css';
-// import * as THREE from './js/Three';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Vector3,
   WebGLRenderer,
@@ -18,9 +17,9 @@ import {
   Line
 } from "three";
 
-import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+// import { VRCanvas, Interactive, DefaultXRControllers } from '@react-three/xr';
+import { Canvas, useThree, useUpdate } from '@react-three/fiber'
 
-import { VRButton } from './components/VRButton';
 
 // Orbit parameters constraints
 const A_MIN = -30;
@@ -48,11 +47,50 @@ const LEVEL_DEPTH = 400;
 const DEF_BRIGHTNESS = 0.5;
 const DEF_SATURATION = 1;
 
+function ParticleCloud({idx, geometry, pointsMaterial, subset}) {
+
+  // const ref = useUpdate(geometry => {
+  //   geometry.setFromPoints(vertices)
+  // }, [])
+
+  const state = useThree();
+  if (state?.scene?.children.count > 0) console.log(state);
+
+// return(
+//   <points
+//         key={idx} 
+//         args={[geometry, pointsMaterial]}
+//         myMaterial={pointsMaterial}
+//         mySubset={subset}
+//         position={[0,0,0]}
+//         name={'particle-cloud'}
+//   >
+//     {/* <bufferGeometry attach="geometry"></bufferGeometry>
+//     <pointsMaterial attach="material"></pointsMaterial> */}
+//   </points>
+// )
+
+
+return  (
+  <mesh>
+    <boxGeometry />
+    <meshStandardMaterial />
+  </mesh>
+)
+
+
+}
 
 
 function App() {
 
   const canvasEl = useRef(null);
+
+  
+
+  const [clouds, setClouds] = useState([]);
+
+  //const { controllers } = useXR();
 
 
   let speed = 2.0;
@@ -75,9 +113,9 @@ function App() {
   });
 
   useEffect(() => {
-    init();
-    animate();
-  })
+    // init();
+    // animate();
+  },[])
 
   const spriteSize = useRef(Math.ceil(3 * window.innerWidth / SPRITE_SCALE_FACTOR));
 
@@ -150,43 +188,6 @@ function App() {
       this.userData.isSelecting = false;
     }
 
-    controller1.current = renderer.current.xr.getController(0);
-    controller1.current.addEventListener('selectstart', onSelectStart);
-    controller1.current.addEventListener('selectend', onSelectEnd);
-    controller1.current.addEventListener('connected', function (event) {
-      this.add(buildController(event.data));
-    });
-    controller1.current.addEventListener('disconnected', function () {
-      this.remove(this.children[0]);
-    });
-
-    controller2.current = renderer.current.xr.getController(1);
-    controller2.current.addEventListener('selectstart', onSelectStart);
-    controller2.current.addEventListener('selectend', onSelectEnd);
-    controller2.current.addEventListener('connected', function (event) {
-      this.add(buildController(event.data));
-    });
-    controller2.current.addEventListener('disconnected', function () {
-      this.remove(this.children[0]);
-    });
-
-    scene.current.add(controller1.current);
-    scene.current.add(controller2.current);
-
-    // The XRControllerModelFactory will automatically fetch controller models
-    // that match what the user is holding as closely as possible. The models
-    // should be attached to the object returned from getControllerGrip in
-    // order to match the orientation of the held device.
-
-    const controllerModelFactory = new XRControllerModelFactory();
-
-    controllerGrip1.current = renderer.current.xr.getControllerGrip(0);
-    controllerGrip1.current.add(controllerModelFactory.createControllerModel(controllerGrip1.current));
-    scene.current.add(controllerGrip1.current);
-
-    controllerGrip2.current = renderer.current.xr.getControllerGrip(1);
-    controllerGrip2.current.add(controllerModelFactory.createControllerModel(controllerGrip2.current));
-    scene.current.add(controllerGrip2.current);
 
 
     // set up effects and scene objects
@@ -204,9 +205,11 @@ function App() {
 
     for (let s = 0; s < NUM_SUBSETS; s++) { hueValues[s] = Math.random(); }
 
+    let particles = [];
+
     // Create particle systems
-    for (let k = 0; k < NUM_LEVELS; k++) {
-      for (let s = 0; s < NUM_SUBSETS; s++) {
+    for (let k = 0, idx = 0; k < NUM_LEVELS; k++) {
+      for (let s = 0; s < NUM_SUBSETS; s++, idx++) {
         const points = [];
         for (let i = 0; i < NUM_POINTS_SUBSET; i++) { points.push(orbit.subsets[s][i].vertex); }
         let geometry = new BufferGeometry().setFromPoints(points);
@@ -219,18 +222,34 @@ function App() {
           transparent: true,
           color: pointColor
         });
-        let particles = new Points(geometry, pointsMaterial);
-        particles.myMaterial = pointsMaterial;
-        //particles.myLevel = k;
-        particles.mySubset = s;
-        particles.position.x = 0;
-        particles.position.y = 0;
-        particles.position.z = - LEVEL_DEPTH * k - (s * LEVEL_DEPTH / NUM_SUBSETS) + SCALE_FACTOR / 2;
-        particles.needsUpdate = 0;
-        particles.name = 'particle-cloud';
-        scene.current.add(particles);
+
+
+        let cloud = <ParticleCloud
+        key={idx}
+        geometry={geometry}
+        pointsMaterial={pointsMaterial}
+        subset={s}
+        />;
+
+        particles.push(cloud);
+
+        // let particles = new Points(geometry, pointsMaterial);
+        // particles.myMaterial = pointsMaterial;
+        // //particles.myLevel = k;
+        // particles.mySubset = s;
+        // particles.position.x = 0;
+        // particles.position.y = 0;
+        // particles.position.z = - LEVEL_DEPTH * k - (s * LEVEL_DEPTH / NUM_SUBSETS) + SCALE_FACTOR / 2;
+        // particles.needsUpdate = 0;
+        // particles.name = 'particle-cloud';
+        //scene.current.add(particles);
+
       }
     }
+
+    setClouds(particles);
+
+
 
     // Setup listeners
     document.addEventListener('mousemove', onDocumentMouseMove, false);
@@ -306,6 +325,8 @@ function App() {
 
   const render = () => {
 
+
+    
     //handleController(controller1.current);
 
     // if (vrEnabled.current) {
@@ -661,10 +682,28 @@ function App() {
 
   return (
     <div className="App">
-      <canvas ref={canvasEl}></canvas>
-      {<VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
+      {/* <canvas ref={canvasEl}></canvas>
+      {<VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>} */}
+      {}
+      {/* <Canvas ref={canvasEl}>
+        {clouds}
+      </Canvas> */}
+      
+      {/* <VRCanvas>
+        <DefaultXRControllers />
+      </VRCanvas> */}
+      <Canvas>
+  <ambientLight intensity={0.1} />
+  <directionalLight color="red" position={[0, 0, 5]} />
+  <mesh>
+    <boxGeometry />
+    <meshStandardMaterial />
+  </mesh>
+</Canvas>
     </div>
   );
 }
+
+
 
 export default App;
