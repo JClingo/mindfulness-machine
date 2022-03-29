@@ -17,8 +17,10 @@ import {
   Line
 } from "three";
 
+
+
 // import { VRCanvas, Interactive, DefaultXRControllers } from '@react-three/xr';
-import { Canvas, useThree, useUpdate } from '@react-three/fiber'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
 
 
 // Orbit parameters constraints
@@ -47,7 +49,7 @@ const LEVEL_DEPTH = 400;
 const DEF_BRIGHTNESS = 0.5;
 const DEF_SATURATION = 1;
 
-function ParticleCloud({idx, geometry, pointsMaterial, subset}) {
+function Cluster({ idx, geometry, pointsMaterial, subset }) {
 
   // const ref = useUpdate(geometry => {
   //   geometry.setFromPoints(vertices)
@@ -56,42 +58,23 @@ function ParticleCloud({idx, geometry, pointsMaterial, subset}) {
   const state = useThree();
   if (state?.scene?.children.count > 0) console.log(state);
 
-// return(
-//   <points
-//         key={idx} 
-//         args={[geometry, pointsMaterial]}
-//         myMaterial={pointsMaterial}
-//         mySubset={subset}
-//         position={[0,0,0]}
-//         name={'particle-cloud'}
-//   >
-//     {/* <bufferGeometry attach="geometry"></bufferGeometry>
-//     <pointsMaterial attach="material"></pointsMaterial> */}
-//   </points>
-// )
-
-
-return  (
-  <mesh>
-    <boxGeometry />
-    <meshStandardMaterial />
-  </mesh>
-)
-
+  return (
+    <points
+      key={idx}
+      args={[geometry, pointsMaterial]}
+      myMaterial={pointsMaterial}
+      mySubset={subset}
+      position={[0, 0, 0]}
+      name={'cluster'}
+    >
+      {/* <bufferGeometry attach="geometry"></bufferGeometry>
+    <pointsMaterial attach="material"></pointsMaterial> */}
+    </points>
+  )
 
 }
 
-
-function App() {
-
-  const canvasEl = useRef(null);
-
-  
-
-  const [clouds, setClouds] = useState([]);
-
-  //const { controllers } = useXR();
-
+function Universe() {
 
   let speed = 2.0;
   let rotationSpeed = -0.004;
@@ -112,16 +95,7 @@ function App() {
     scaleY: 0
   });
 
-  useEffect(() => {
-    // init();
-    // animate();
-  },[])
-
   const spriteSize = useRef(Math.ceil(3 * window.innerWidth / SPRITE_SCALE_FACTOR));
-
-  const camera = useRef(null);
-  const scene = useRef(null);
-  const renderer = useRef(null);
 
   const controller1 = useRef(null);
   const controller2 = useRef(null)
@@ -132,7 +106,7 @@ function App() {
   let hueValues = [];
   //let vrHMD, vrHMDSensor;
 
-  let mouseX = 0, mouseY = 0;
+
   let renderTargetWidth = window.innerWidth;
   let renderTargetHeight = window.innerHeight;
 
@@ -143,12 +117,39 @@ function App() {
   const vrEnabled = useRef(false);
   let isFullscreen = false;
 
-  const init = () => {
+  const [clusters, setClusters] = useState([]);
+  let mouseX = 0, mouseY = 0;
 
-    const orbit = { ...currentOrbit.current };
+  const state = useThree();
+  const { scene, camera, renderer } = state;
 
-    scene.current = new Scene();
-    scene.current.fog = new FogExp2(0x000000, 0.0012);
+  useEffect(() => {
+
+    let orbit = {
+      subsets: [],
+      xMin: 0,
+      xMax: 0,
+      yMin: 0,
+      yMax: 0,
+      scaleX: 0,
+      scaleY: 0
+  };;
+
+    document.addEventListener('mousemove', onDocumentMouseMove, false);
+    document.addEventListener('touchstart', onDocumentTouchStart, false);
+    document.addEventListener('touchmove', onDocumentTouchMove, false);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange, false);
+    document.addEventListener('mozfullscreenchange', onFullscreenChange, false);
+    window.addEventListener('resize', onWindowResize, false);
+    window.addEventListener('keypress', onKeyPress, false);
+    window.addEventListener('keydown', onKeyDown, false);
+
+    setInterval(updateOrbit, 4000);
+
+
+
+    //let scene = new Scene();
+    //scene.fog = new FogExp2(0x000000, 0.0012);
 
     // Initialize data points
     for (let i = 0; i < NUM_SUBSETS; i++) {
@@ -163,30 +164,30 @@ function App() {
       orbit.subsets.push(subsetPoints);
     }
 
-    renderer.current = new WebGLRenderer({
-      canvas: canvasEl.current,
-      clearColor: 0x000000,
-      clearAlpha: 1,
-      //antialias: true,
-      devicePixelRatio: window.devicePixelRatio || 1,
-      powerPreference: "high-performance"
-    });
+    // renderer = new WebGLRenderer({
+    //   canvas: canvas,
+    //   clearColor: 0x000000,
+    //   clearAlpha: 1,
+    //   //antialias: true,
+    //   devicePixelRatio: window.devicePixelRatio || 1,
+    //   powerPreference: "high-performance"
+    // });
 
-    renderer.current.setSize(renderTargetWidth, renderTargetHeight);
-    renderer.current.xr.enabled = true;
+    // renderer.setSize(renderTargetWidth, renderTargetHeight);
+    // renderer.xr.enabled = true;
 
 
     // set up controllers
 
-    function onSelectStart() {
+    // function onSelectStart() {
 
-      this.userData.isSelecting = true;
-    }
+    //   this.userData.isSelecting = true;
+    // }
 
-    function onSelectEnd() {
+    // function onSelectEnd() {
 
-      this.userData.isSelecting = false;
-    }
+    //   this.userData.isSelecting = false;
+    // }
 
 
 
@@ -196,8 +197,8 @@ function App() {
 
     const sprite1 = new TextureLoader().load('spiral-galaxy.svg');
 
-    camera.current = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCALE_FACTOR);
-    camera.current.position.set(0, 0, SCALE_FACTOR / 2);
+    //camera = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCALE_FACTOR);
+    camera.position.set(0, 0, SCALE_FACTOR / 2);
 
     currentOrbit.current = generateAndUpdateOrbit(orbit);
 
@@ -205,7 +206,7 @@ function App() {
 
     for (let s = 0; s < NUM_SUBSETS; s++) { hueValues[s] = Math.random(); }
 
-    let particles = [];
+    let clusterEls = [];
 
     // Create particle systems
     for (let k = 0, idx = 0; k < NUM_LEVELS; k++) {
@@ -224,14 +225,14 @@ function App() {
         });
 
 
-        let cloud = <ParticleCloud
-        key={idx}
-        geometry={geometry}
-        pointsMaterial={pointsMaterial}
-        subset={s}
+        let clusterEl = <Cluster
+          key={idx}
+          geometry={geometry}
+          pointsMaterial={pointsMaterial}
+          subset={s}
         />;
 
-        particles.push(cloud);
+        clusterEls.push(clusterEl);
 
         // let particles = new Points(geometry, pointsMaterial);
         // particles.myMaterial = pointsMaterial;
@@ -241,89 +242,16 @@ function App() {
         // particles.position.y = 0;
         // particles.position.z = - LEVEL_DEPTH * k - (s * LEVEL_DEPTH / NUM_SUBSETS) + SCALE_FACTOR / 2;
         // particles.needsUpdate = 0;
-        // particles.name = 'particle-cloud';
-        //scene.current.add(particles);
+        // particles.name = 'cluster';
+        //scene.add(particles);
 
       }
     }
 
-    setClouds(particles);
+    setClusters(clusterEls);
+  }, [])
 
-
-
-    // Setup listeners
-    document.addEventListener('mousemove', onDocumentMouseMove, false);
-    document.addEventListener('touchstart', onDocumentTouchStart, false);
-    document.addEventListener('touchmove', onDocumentTouchMove, false);
-    document.addEventListener('webkitfullscreenchange', onFullscreenChange, false);
-    document.addEventListener('mozfullscreenchange', onFullscreenChange, false);
-    window.addEventListener('resize', onWindowResize, false);
-    window.addEventListener('keypress', onKeyPress, false);
-    window.addEventListener('keydown', onKeyDown, false);
-
-    setInterval(updateOrbit, 4000);
-
-  }
-
-  function buildController(data) {
-
-    let geometry, material;
-
-    switch (data.targetRayMode) {
-
-      case 'tracked-pointer':
-
-        geometry = new BufferGeometry();
-        geometry.setAttribute('position', new Float32BufferAttribute([0, 0, 0, 0, 0, - 1], 3));
-        geometry.setAttribute('color', new Float32BufferAttribute([0.5, 0.5, 0.5, 0, 0, 0], 3));
-
-        material = new LineBasicMaterial({ vertexColors: true, blending: AdditiveBlending });
-
-        return new Line(geometry, material);
-
-      // case 'gaze':
-
-      //   geometry = new RingGeometry( 0.02, 0.04, 32 ).translate( 0, 0, - 1 );
-      //   material = new MeshBasicMaterial( { opacity: 0.5, transparent: true } );
-      //   return new Mesh( geometry, material );
-
-    }
-
-  }
-
-  function handleController(controller) {
-
-    if (controller.userData.isSelecting) {
-
-
-      //console.log(controller);
-
-
-
-      //mouseX = event.clientX - windowHalfX;
-      //mouseY = event.clientY - windowHalfY;
-
-      // const object = room.children[ count ++ ];
-
-      // object.position.copy( controller.position );
-      // object.userData.velocity.x = ( Math.random() - 0.5 ) * 3;
-      // object.userData.velocity.y = ( Math.random() - 0.5 ) * 3;
-      // object.userData.velocity.z = ( Math.random() - 9 );
-      // object.userData.velocity.applyQuaternion( controller.quaternion );
-
-      // if ( count === room.children.length ) count = 0;
-
-
-
-    }
-
-  }
-
-  const animate = () => {
-    renderer.current.setAnimationLoop(render);
-  }
-
-  const render = () => {
+  useFrame((_, delta) => {
 
 
     
@@ -339,77 +267,68 @@ function App() {
     //   // if the position is reported use it
     //   // if (state.position) {
 
-    //   //camera.current.position.x = state.position.x * CAMERA_BOUND;
-    //   camera.current.position.set(state.position.x * CAMERA_BOUND,
+    //   //camera.position.x = state.position.x * CAMERA_BOUND;
+    //   camera.position.set(state.position.x * CAMERA_BOUND,
     //     state.position.y * CAMERA_BOUND,
     //     state.position.z * CAMERA_BOUND + SCALE_FACTOR / 2);
-      
+
 
     //   // if the orientation is reported use it
     //   // if (state.orientation) {
-    //   camera.current.quaternion.set(state.quaternion.x,
+    //   camera.quaternion.set(state.quaternion.x,
     //     state.quaternion.y * 100,
     //     state.quaternion.z * 100,
     //     state.quaternion.w * 100);
     //   // } else {
-    //   //   camera.current.lookAt(scene.current.position);
+    //   //   camera.lookAt(scene.position);
     //   // }
 
-    //   //camera.current.lookAt(scene.current.position);
+    //   //camera.lookAt(scene.position);
 
     // } else {
-      // move the camera position based on mouse position/taps
-      if (camera.current.position.x >= - CAMERA_BOUND && camera.current.position.x <= CAMERA_BOUND) {
-        camera.current.position.x += (mouseX - camera.current.position.x) * 0.05;
-        if (camera.current.position.x < - CAMERA_BOUND) camera.current.position.x = -CAMERA_BOUND;
-        if (camera.current.position.x > CAMERA_BOUND) camera.current.position.x = CAMERA_BOUND;
-      }
-      if (camera.current.position.y >= - CAMERA_BOUND && camera.current.position.y <= CAMERA_BOUND) {
-        camera.current.position.y += (- mouseY - camera.current.position.y) * 0.05;
-        if (camera.current.position.y < - CAMERA_BOUND) camera.current.position.y = -CAMERA_BOUND;
-        if (camera.current.position.y > CAMERA_BOUND) camera.current.position.y = CAMERA_BOUND;
-      }
-      // look straight ahead
-      camera.current.lookAt(scene.current.position);
+    // move the camera position based on mouse position/taps
+    if (camera.position.x >= - CAMERA_BOUND && camera.position.x <= CAMERA_BOUND) {
+      camera.position.x += (mouseX - camera.position.x) * 0.05;
+      if (camera.position.x < - CAMERA_BOUND) camera.position.x = -CAMERA_BOUND;
+      if (camera.position.x > CAMERA_BOUND) camera.position.x = CAMERA_BOUND;
+    }
+    if (camera.position.y >= - CAMERA_BOUND && camera.position.y <= CAMERA_BOUND) {
+      camera.position.y += (- mouseY - camera.position.y) * 0.05;
+      if (camera.position.y < - CAMERA_BOUND) camera.position.y = -CAMERA_BOUND;
+      if (camera.position.y > CAMERA_BOUND) camera.position.y = CAMERA_BOUND;
+    }
+    // look straight ahead
+    camera.lookAt(scene.position);
     //}
 
-    const points = scene.current.children.filter(child => child.name === "particle-cloud");
+    //console.log(scene.children.filter(c => c.name === 'universe'));
+
+    
+    const gClusters = scene.children.filter(c => c.name === 'universe')[0].children.filter(child => child.name === "cluster");
 
     // update particle positions
-    for (let i = 0; i < points.length; i++) {
-      points[i].position.z += speed;
-      points[i].rotation.z += rotationSpeed;
+    for (let i = 0; i < gClusters.length; i++) {
+      gClusters[i].position.z += speed;
+      gClusters[i].rotation.z += rotationSpeed;
       // if the particle level has passed the fade distance
-      if (points[i].position.z >= ((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH + SCALE_FACTOR) {
+      if (gClusters[i].position.z >= ((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH + SCALE_FACTOR) {
         // move the particle level back in front of the camera
-        points[i].position.z = -((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH;
-        if (points[i].needsUpdate === 1) {
+        gClusters[i].position.z = -((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH;
+        if (gClusters[i].needsUpdate === 1) {
           // update the geometry and color
-          points[i].geometry.attributes.position.needsUpdate = true;
+          gClusters[i].geometry.attributes.position.needsUpdate = true;
 
-          points[i].myMaterial.color.setHSL(hueValues[points[i].mySubset], DEF_SATURATION, DEF_BRIGHTNESS);
-          points[i].needsUpdate = 0;
+          gClusters[i].myMaterial.color.setHSL(hueValues[gClusters[i].mySubset], DEF_SATURATION, DEF_BRIGHTNESS);
+          gClusters[i].needsUpdate = 0;
 
         }
       }
     }
-    
-    renderer.current.render(scene.current, camera.current);
 
-  }
+    //renderer.render(scene, camera);
 
-  const onSetVRSession = async (session) => {
-    vrEnabled.current = true;
-    //init();
-    await renderer.current.xr.setSession(session);
-    camera.current = renderer.current.xr.getCamera();
-  }
 
-  const onEndVRSession = (session) => {
-    vrEnabled.current = false;
-    init();
-
-  }
+  })
 
 
   ///////////////////////////////////////////////
@@ -420,9 +339,10 @@ function App() {
     for (let s = 0; s < NUM_SUBSETS; s++) {
       hueValues[s] = Math.random();
     }
-    const points = scene.current.children.filter(child => child.name === "particle-cloud");
-    for (let i = 0; i < points.length; i++) {
-      points[i].needsUpdate = 1;
+
+    const gClusters = scene.children.filter(c => c.name === 'universe')[0].children.filter(child => child.name === "cluster");
+    for (let i = 0; i < gClusters.length; i++) {
+      gClusters[i].needsUpdate = 1;
     }
     currentOrbit.current = generateAndUpdateOrbit({ ...currentOrbit.current });
 
@@ -487,9 +407,9 @@ function App() {
     orbit.scaleY = scaleY;
 
     // find all points
-    const points = scene.current.children.filter(child => child.name === "particle-cloud");
+    const gClusters = scene.children.filter(c => c.name === 'universe')[0].children.filter(child => child.name === "cluster");
 
-    if (points.length === 0) {
+    if (gClusters.length === 0) {
       // Normalize vertex data
       for (let k = 0, idx = 0; k < NUM_LEVELS; k++) {
         for (let s = 0; s < NUM_SUBSETS; s++, idx++) {
@@ -511,7 +431,7 @@ function App() {
             curSubset[i].vertex.x = vertexX
             curSubset[i].vertex.y = vertexY;
             // update existing points in orbit    
-            points[idx].geometry.attributes.position.setXY(i, vertexX, vertexY);
+            gClusters[idx].geometry.attributes.position.setXY(i, vertexX, vertexY);
           }
         }
       }
@@ -560,16 +480,31 @@ function App() {
     }
   }
 
+  // const onSetVRSession = async (session) => {
+  //   vrEnabled.current = true;
+  //   //init();
+  //   await renderer.xr.setSession(session);
+  //   camera = renderer.xr.getCamera();
+  // }
+
+  // const onEndVRSession = (session) => {
+  //   vrEnabled.current = false;
+  //   init();
+
+  // }
+
+
+
   // Find the right method, call on correct element
-  const launchIntoFullscreen = (element) => {
-    if (element.requestFullscreen) {
-      element.requestFullscreen();
-    } else if (element.mozRequestFullScreen) {
-      element.mozRequestFullScreen();
-    } else if (element.webkitRequestFullscreen) {
-      element.webkitRequestFullscreen();
-    } else if (element.msRequestFullscreen) {
-      element.msRequestFullscreen();
+  const launchIntoFullscreen = () => {
+    if (document.requestFullscreen) {
+      document.requestFullscreen();
+    } else if (document.mozRequestFullScreen) {
+      document.mozRequestFullScreen();
+    } else if (document.webkitRequestFullscreen) {
+      document.webkitRequestFullscreen();
+    } else if (document.msRequestFullscreen) {
+      document.msRequestFullscreen();
     }
   }
 
@@ -587,7 +522,9 @@ function App() {
   const onFullscreenChange = () => {
     if (!document.webkitFullscreenElement && !document.mozFullScreenElement) {
       isFullscreen = false;
-      canvasEl.current.style.cursor = "";
+
+      // canvas.style.cursor = "";
+
       // if (vrSupported) {
       //   vrEnabled = false;
       //   // unhide the mouse and set the device pixel ratio correctly
@@ -595,13 +532,15 @@ function App() {
       // }
     } else {
       isFullscreen = true;
-      canvasEl.current.style.cursor = "none";
+
+      // canvas.style.cursor = "none";
+
       // if (vrSupported) {
       //   vrEnabled = true;
       //   // reset the sensor on enable
       //   vrHMDSensor.zeroSensor();
       //   // reset the camera position
-      //   camera.current.position.set(0, 0, SCALE_FACTOR / 2);
+      //   camera.position.set(0, 0, SCALE_FACTOR / 2);
       //   // hide the mouse, and set the device pixel ratio to 1
       //   renderer.devicePixelRatio = 1;
       // }
@@ -630,7 +569,7 @@ function App() {
     spriteSize.current = Math.ceil(3 * renderTargetWidth / 1600);
     //}
 
-    const points = scene.current.children.filter(child => child.name === "particle-cloud");
+    const points = scene.children.filter(child => child.name === "cluster");
 
     // rescale sprites for new resolution
     for (let i = 0; i < points.length; i++) {
@@ -638,12 +577,13 @@ function App() {
     }
 
     // update camera
-    camera.current.aspect = renderTargetWidth / renderTargetHeight;
-    camera.current.updateProjectionMatrix();
+    camera.aspect = renderTargetWidth / renderTargetHeight;
+    camera.updateProjectionMatrix();
 
     // change render target size
-    renderer.current.setSize(renderTargetWidth, renderTargetHeight);
-    renderer.current.setViewport(0, 0, renderTargetWidth, renderTargetHeight);
+    // renderer.setSize(renderTargetWidth, renderTargetHeight);
+    // renderer.setViewport(0, 0, renderTargetWidth, renderTargetHeight);
+    // TODO
   }
 
   const onKeyDown = (event) => {
@@ -661,17 +601,17 @@ function App() {
       if (isFullscreen) {
         exitFullscreen();
         // } else if (vrSupported) {
-        //   if (canvasEl.current.mozRequestFullScreen) {
-        //     canvasEl.current.mozRequestFullScreen({
+        //   if (canvas.mozRequestFullScreen) {
+        //     canvas.mozRequestFullScreen({
         //       vrDisplay: vrHMD
         //     });
-        //   } else if (canvasEl.current.webkitRequestFullscreen) {
-        //     canvasEl.current.webkitRequestFullscreen({
+        //   } else if (canvas.webkitRequestFullscreen) {
+        //     canvas.webkitRequestFullscreen({
         //       vrDisplay: vrHMD,
         //     });
         //   }
       } else {
-        launchIntoFullscreen(canvasEl.current);
+        launchIntoFullscreen();
       }
       // } else if (vrEnabled && (event.which === 82 || event.which === 114)) {
       //   // handle 'z'
@@ -680,26 +620,24 @@ function App() {
   }
   ///
 
+
+
+  return (
+    <group name="universe">
+      {clusters}
+    </group>
+  )
+}
+
+
+function App() {
+
   return (
     <div className="App">
-      {/* <canvas ref={canvasEl}></canvas>
-      {<VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>} */}
-      {}
-      {/* <Canvas ref={canvasEl}>
-        {clouds}
-      </Canvas> */}
-      
-      {/* <VRCanvas>
-        <DefaultXRControllers />
-      </VRCanvas> */}
-      <Canvas>
-  <ambientLight intensity={0.1} />
-  <directionalLight color="red" position={[0, 0, 5]} />
-  <mesh>
-    <boxGeometry />
-    <meshStandardMaterial />
-  </mesh>
-</Canvas>
+      <Canvas className="render-canvas" camera={{fov: 60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 3 * SCALE_FACTOR}}>
+        {/* <fogExp2 args={[0x000000, 0.0012]} /> */}
+        <Universe />
+      </Canvas>
     </div>
   );
 }
