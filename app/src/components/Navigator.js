@@ -21,6 +21,7 @@ import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerM
 
 import { VRButton } from './VRButton';
 import { Quaternion } from 'three';
+import { Group } from 'three';
 
 // Orbit parameters constraints
 const A_MIN = -30;
@@ -82,6 +83,7 @@ function Navigator(props) {
     const spriteSize = useRef(Math.ceil(3 * window.innerWidth / SPRITE_SCALE_FACTOR));
 
     const camera = useRef(null);
+    const xrCameraGroup = useRef(new Group());
     const scene = useRef(null);
     const renderer = useRef(null);
 
@@ -306,99 +308,6 @@ function Navigator(props) {
 
     const render = () => {
 
-        //handleController(controller1.current);
-
-        if (vrEnabled.current) {
-            // get state
-            //let state = vrHMDSensor.getState();
-            console.log(controller1.current.quaternion.x);
-            const state = controller1.current;
-
-
-            // if the position is reported use it
-            // if (state.position) {
-
-            const cLeft = camera.current.cameras[0];
-            const cRight = camera.current.cameras[1];
-
-
-            // cLeft.position.set(state.position.x * CAMERA_BOUND,
-            //     state.position.y * CAMERA_BOUND,
-            //     state.position.z * CAMERA_BOUND + SCALE_FACTOR / 2);
-
-           
-
-            // cRight.position.set(state.position.x * CAMERA_BOUND,
-            //     state.position.y * CAMERA_BOUND,
-            //     state.position.z * CAMERA_BOUND + SCALE_FACTOR / 2);
-
-
-
-            if (cLeft.position.x >= - CAMERA_BOUND && cLeft.position.x <= CAMERA_BOUND) {
-                cLeft.position.x += (mouseX - cLeft.position.x) * 0.05;
-                if (cLeft.position.x < - CAMERA_BOUND) cLeft.position.x = -CAMERA_BOUND;
-                if (cLeft.position.x > CAMERA_BOUND) cLeft.position.x = CAMERA_BOUND;
-            }
-            if (cLeft.position.y >= - CAMERA_BOUND && cLeft.position.y <= CAMERA_BOUND) {
-                cLeft.position.y += (- mouseY - cLeft.position.y) * 0.05;
-                if (cLeft.position.y < - CAMERA_BOUND) cLeft.position.y = -CAMERA_BOUND;
-                if (cLeft.position.y > CAMERA_BOUND) cLeft.position.y = CAMERA_BOUND;
-            }
-
-            if (cRight.position.x >= - CAMERA_BOUND && cRight.position.x <= CAMERA_BOUND) {
-                cRight.position.x += (mouseX - cRight.position.x) * 0.05;
-                if (cRight.position.x < - CAMERA_BOUND) cRight.position.x = -CAMERA_BOUND;
-                if (cRight.position.x > CAMERA_BOUND) cRight.position.x = CAMERA_BOUND;
-            }
-            if (cRight.position.y >= - CAMERA_BOUND && cRight.position.y <= CAMERA_BOUND) {
-                cRight.position.y += (- mouseY - cRight.position.y) * 0.05;
-                if (cRight.position.y < - CAMERA_BOUND) cRight.position.y = -CAMERA_BOUND;
-                if (cRight.position.y > CAMERA_BOUND) cRight.position.y = CAMERA_BOUND;
-            }
-
-            
-            
-            
-            // cLeft.quaternion.set(0,0,0,0);
-            // cRight.quaternion.set(0,0,0,0);
-
-            //const vector = new Vector3( 0, 0, -1 );
-            // vector.applyQuaternion( cLeft.quaternion );
-            // vector.applyQuaternion( cRight.quaternion );
-            
-
-            cLeft.updateWorldMatrix(true, false);
-            cRight.updateWorldMatrix(true, false);
-
-            
-            // from middle to one end
-            cLeft.lookAt(0,0,-(SCALE_FACTOR / 4));
-            cRight.lookAt(0,0,-(SCALE_FACTOR / 4));
-            const quaternion = new Quaternion();
-
-            // cLeft.applyQuaternion(quaternion); // Apply Quaternion
-            // cLeft.quaternion.normalize();  // Normalize Quaternion
-            // cRight.applyQuaternion(quaternion); // Apply Quaternion
-            // cRight.quaternion.normalize();  // Normalize Quaternion
-
-
-
-        } else {
-            // move the camera position based on mouse position/taps
-            if (camera.current.position.x >= - CAMERA_BOUND && camera.current.position.x <= CAMERA_BOUND) {
-                camera.current.position.x += (mouseX - camera.current.position.x) * 0.05;
-                if (camera.current.position.x < - CAMERA_BOUND) camera.current.position.x = -CAMERA_BOUND;
-                if (camera.current.position.x > CAMERA_BOUND) camera.current.position.x = CAMERA_BOUND;
-            }
-            if (camera.current.position.y >= - CAMERA_BOUND && camera.current.position.y <= CAMERA_BOUND) {
-                camera.current.position.y += (- mouseY - camera.current.position.y) * 0.05;
-                if (camera.current.position.y < - CAMERA_BOUND) camera.current.position.y = -CAMERA_BOUND;
-                if (camera.current.position.y > CAMERA_BOUND) camera.current.position.y = CAMERA_BOUND;
-            }
-            // look straight ahead
-            camera.current.lookAt(scene.current.position);
-        }
-
         const points = scene.current.children.filter(child => child.name === "particle-cloud");
 
         // update particle positions
@@ -420,13 +329,94 @@ function Navigator(props) {
             }
         }
 
-        renderer.current.render(scene.current, camera.current);
+
+        //handleController(controller1.current);
+
+        if (vrEnabled.current) {
+            // get state
+            //let state = vrHMDSensor.getState();
+            const state = controller1.current;
+
+
+            // if the position is reported use it
+            // if (state.position) {
+
+            const xrCam = xrCameraGroup.current.children[0];
+            if (!xrCam) return;
+            
+
+            if ( xrCameraGroup.current.position.x >= - CAMERA_BOUND &&  xrCameraGroup.current.position.x <= CAMERA_BOUND) {
+                 xrCameraGroup.current.position.x += (mouseX -  xrCameraGroup.current.position.x) * 0.05;
+                if ( xrCameraGroup.current.position.x < - CAMERA_BOUND)  xrCameraGroup.current.position.x = -CAMERA_BOUND;
+                if ( xrCameraGroup.current.position.x > CAMERA_BOUND)  xrCameraGroup.current.position.x = CAMERA_BOUND;
+            }
+            if ( xrCameraGroup.current.position.y >= - CAMERA_BOUND &&  xrCameraGroup.current.position.y <= CAMERA_BOUND) {
+                 xrCameraGroup.current.position.y += (- mouseY -  xrCameraGroup.current.position.y) * 0.05;
+                if ( xrCameraGroup.current.position.y < - CAMERA_BOUND)  xrCameraGroup.current.position.y = -CAMERA_BOUND;
+                if ( xrCameraGroup.current.position.y > CAMERA_BOUND)  xrCameraGroup.current.position.y = CAMERA_BOUND;
+            }
+
+            const vector = new Vector3( 0, 0, -1 );
+            vector.applyQuaternion( xrCameraGroup.current.quaternion );
+
+            xrCam.updateWorldMatrix(true, true);
+
+            renderer.current.render(scene.current, xrCam);
+            return;
+
+            
+            
+            // cLeft.quaternion.set(0,0,0,0);
+            // cRight.quaternion.set(0,0,0,0);
+
+           
+            
+            // from middle to one end
+            // cLeft.lookAt(0,0,-(SCALE_FACTOR / 4));
+            // cRight.lookAt(0,0,-(SCALE_FACTOR / 4));
+
+
+            //const quaternion = new Quaternion();
+
+            // cLeft.applyQuaternion(quaternion); // Apply Quaternion
+            // cLeft.quaternion.normalize();  // Normalize Quaternion
+            // cRight.applyQuaternion(quaternion); // Apply Quaternion
+            // cRight.quaternion.normalize();  // Normalize Quaternion
+
+            
+            //renderer.current.render(scene.current, camera.current);
+
+        } else {
+            // move the camera position based on mouse position/taps
+            if (camera.current.position.x >= - CAMERA_BOUND && camera.current.position.x <= CAMERA_BOUND) {
+                camera.current.position.x += (mouseX - camera.current.position.x) * 0.05;
+                if (camera.current.position.x < - CAMERA_BOUND) camera.current.position.x = -CAMERA_BOUND;
+                if (camera.current.position.x > CAMERA_BOUND) camera.current.position.x = CAMERA_BOUND;
+            }
+            if (camera.current.position.y >= - CAMERA_BOUND && camera.current.position.y <= CAMERA_BOUND) {
+                camera.current.position.y += (- mouseY - camera.current.position.y) * 0.05;
+                if (camera.current.position.y < - CAMERA_BOUND) camera.current.position.y = -CAMERA_BOUND;
+                if (camera.current.position.y > CAMERA_BOUND) camera.current.position.y = CAMERA_BOUND;
+            }
+            // look straight ahead
+            camera.current.lookAt(scene.current.position);
+
+            renderer.current.render(scene.current, camera.current);
+
+        }
+
+       
+
+        
 
     }
 
     const onSetVRSession = async (session) => {
         vrEnabled.current = true;
         await renderer.current.xr.setSession(session);
+        
+        xrCameraGroup.current.position.set(0, 0, SCALE_FACTOR / 2);
+        xrCameraGroup.current.add(renderer.current.xr.getCamera());
         //camera.current = renderer.current.xr.getCamera();
         //camera.current.position.set(0, 0, SCALE_FACTOR / 2);
     }
