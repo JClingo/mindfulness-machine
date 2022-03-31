@@ -326,19 +326,12 @@ function Navigator(props) {
             //     state.position.y * CAMERA_BOUND,
             //     state.position.z * CAMERA_BOUND + SCALE_FACTOR / 2);
 
-            // cLeft.quaternion.set(state.quaternion.x,
-            //     state.quaternion.y,
-            //     state.quaternion.z,
-            //     state.quaternion.w);
+           
 
             // cRight.position.set(state.position.x * CAMERA_BOUND,
             //     state.position.y * CAMERA_BOUND,
             //     state.position.z * CAMERA_BOUND + SCALE_FACTOR / 2);
 
-            // cRight.quaternion.set(state.quaternion.x,
-            //     state.quaternion.y,
-            //     state.quaternion.z,
-            //     state.quaternion.w);
 
 
             if (cLeft.position.x >= - CAMERA_BOUND && cLeft.position.x <= CAMERA_BOUND) {
@@ -434,8 +427,8 @@ function Navigator(props) {
     const onSetVRSession = async (session) => {
         vrEnabled.current = true;
         await renderer.current.xr.setSession(session);
-        camera.current = renderer.current.xr.getCamera();
-        camera.current.position.set(0, 0, SCALE_FACTOR / 2);
+        //camera.current = renderer.current.xr.getCamera();
+        //camera.current.position.set(0, 0, SCALE_FACTOR / 2);
     }
 
     const onEndVRSession = (session) => {
