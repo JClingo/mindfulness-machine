@@ -1,0 +1,168 @@
+.label {
+    font-size: 1.5em;
+}
+
+.sublabel {
+    font-size: 1em;
+}
+
+.response {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    grid-row-gap:1em;
+    height: 100%;
+    overflow-y: visible;
+    z-index: 1;
+    grid-auto-columns: max-content;
+}
+
+.form-image  {
+    max-width: 120px;
+    
+}
+
+.choice {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    grid-row-gap: .75em;
+}
+
+.choice .label, .slider .label {
+    font-size: 1em;
+}
+
+.options { 
+    display: grid;
+    grid-auto-flow: column;
+    grid-column-gap: 1em;
+}
+
+
+
+.choice .option { 
+    display: grid;
+    justify-items: center;
+}
+
+.option .form-image {
+    width: 20px;
+}
+
+.button-container {
+    display: grid;
+    align-content: center;
+    padding-top: 1em;
+}
+
+.next {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    grid-gap: 1em;
+}
+
+.slider {
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    padding-top: 1em;
+}
+
+.slider .label {
+    margin-bottom: 1em;
+}
+
+
+.slider .sub-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.slider .sub-label {
+    padding-top: 1.5em;
+    font-size: 0.75em;
+}
+
+.confirm {
+    display: grid;
+    grid-row-gap:1em;
+}
+ 
+.confirm .options { 
+    display: grid;
+    grid-auto-flow: column;
+    grid-column-gap:1em;
+}
+
+.execute {
+    display: grid;
+    grid-row-gap:1em;
+}
+ 
+.execute .options { 
+    display: grid;
+    grid-auto-flow: column;
+    grid-column-gap:1em;
+}
+
+.survey-container {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    justify-content: center;
+    align-content: start;
+    z-index: 10;
+    display: grid;
+    display: inline-block;    
+    align-content: center;
+}
+
+.user-id-container {
+    padding: 0.5rem;
+    background-color: #00318a;
+    color: white;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    font-weight: 500;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.survey {
+    height: 100%;
+    min-height: 100%;
+    min-width: 100%;
+}
+
+.samples .title {
+    font-size: 1.25em;
+    text-align: center;
+}
+
+.samples {
+    display: grid;
+    grid-auto-flow: column;
+    grid-gap: 2em;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    height: 100%;
+    grid-auto-columns: 1fr;
+}
+
+.samples .sample {
+    display: grid;
+    justify-content: center;
+    align-self: center;
+}
+
+.sample .figure {
+    max-width: 100%;
+}
