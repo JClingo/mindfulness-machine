@@ -14,45 +14,27 @@ import {
     AdditiveBlending,
     Float32BufferAttribute,
     LineBasicMaterial,
-    Line
+    Line,
+    Group,
+    Quaternion
 } from "three";
+import { prng_alea } from 'esm-seedrandom';
 
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
 import { VRButton } from './VRButton';
-import { Quaternion } from 'three';
-import { Group } from 'three';
-
-// Orbit parameters constraints
-const A_MIN = -30;
-const A_MAX = 30;
-const B_MIN = 0.2;
-const B_MAX = 1.8;
-const C_MIN = 5;
-const C_MAX = 17;
-const D_MIN = 0;
-const D_MAX = 10;
-const E_MIN = 0;
-const E_MAX = 12;
-
-// Constants
-const SPRITE_SCALE_FACTOR = 800;
-const SCALE_FACTOR = 1600;
-const CAMERA_BOUND = 200;
-
-const NUM_POINTS_SUBSET = 25000;
-const NUM_SUBSETS = 7;
-
-const NUM_LEVELS = 10;
-const LEVEL_DEPTH = 400;
-
-const DEF_BRIGHTNESS = 0.5;
-const DEF_SATURATION = 1;
+import { generateOrbit } from '../services/navigator';
 
 
+function Navigator({ useStore }) {
 
-function Navigator(props) {
 
+    //const seed = useStore(state => state.seed);
+    const seed = useRef(useStore.getState().seed);
+    const incrementSeed = useStore(state => state.incrementSeed);
+    const experimentSettings = useStore(state => state.experiment).settings;
+    const { SCENE, ORBIT } = experimentSettings;
+    
     const canvasEl = useRef(null);
 
 
@@ -76,11 +58,13 @@ function Navigator(props) {
     });
 
     useEffect(() => {
+        useStore.subscribe(state => seed.current = state.seed);
         init();
         animate();
+
     })
 
-    const spriteSize = useRef(Math.ceil(3 * window.innerWidth / SPRITE_SCALE_FACTOR));
+    const spriteSize = useRef(Math.ceil(3 * window.innerWidth / SCENE.SPRITE_SCALE_FACTOR));
 
     const camera = useRef(null);
     const xrCameraGroup = useRef(new Group());
@@ -109,15 +93,15 @@ function Navigator(props) {
 
     const init = () => {
 
-        const orbit = { ...currentOrbit.current };
+        let orbit = { ...currentOrbit.current };
 
         scene.current = new Scene();
         scene.current.fog = new FogExp2(0x000000, 0.0012);
 
         // Initialize data points
-        for (let i = 0; i < NUM_SUBSETS; i++) {
+        for (let i = 0; i < SCENE.NUM_SUBSETS; i++) {
             let subsetPoints = [];
-            for (let j = 0; j < NUM_POINTS_SUBSET; j++) {
+            for (let j = 0; j < SCENE.NUM_POINTS_SUBSET; j++) {
                 subsetPoints[j] = {
                     x: 0,
                     y: 0,
@@ -197,22 +181,24 @@ function Navigator(props) {
 
         const sprite1 = new TextureLoader().load('spiral-galaxy.svg');
 
-        camera.current = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCALE_FACTOR);
-        camera.current.position.set(0, 0, SCALE_FACTOR / 2);
+        camera.current = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCENE.SCALE_FACTOR);
+        camera.current.position.set(0, 0, SCENE.SCALE_FACTOR / 2);
 
-        currentOrbit.current = generateAndUpdateOrbit(orbit);
+        
+        const rng = prng_alea(seed.current);
+        orbit = generateOrbit({ ...orbit }, ORBIT, SCENE, rng);
 
         const pointColor = new Color();
-
-        for (let s = 0; s < NUM_SUBSETS; s++) { hueValues[s] = Math.random(); }
+  
+        for (let s = 0; s < SCENE.NUM_SUBSETS; s++) { hueValues[s] = rng(); }
 
         // Create particle systems
-        for (let k = 0; k < NUM_LEVELS; k++) {
-            for (let s = 0; s < NUM_SUBSETS; s++) {
+        for (let k = 0; k < SCENE.NUM_LEVELS; k++) {
+            for (let s = 0; s < SCENE.NUM_SUBSETS; s++) {
                 const points = [];
-                for (let i = 0; i < NUM_POINTS_SUBSET; i++) { points.push(orbit.subsets[s][i].vertex); }
+                for (let i = 0; i < SCENE.NUM_POINTS_SUBSET; i++) { points.push(orbit.subsets[s][i].vertex); }
                 let geometry = new BufferGeometry().setFromPoints(points);
-                pointColor.setHSL(hueValues[s], DEF_SATURATION, DEF_BRIGHTNESS);
+                pointColor.setHSL(hueValues[s], SCENE.DEF_SATURATION, SCENE.DEF_BRIGHTNESS);
                 let pointsMaterial = new PointsMaterial({
                     size: spriteSize.current,
                     map: sprite1,
@@ -227,12 +213,14 @@ function Navigator(props) {
                 particles.mySubset = s;
                 particles.position.x = 0;
                 particles.position.y = 0;
-                particles.position.z = - LEVEL_DEPTH * k - (s * LEVEL_DEPTH / NUM_SUBSETS) + SCALE_FACTOR / 2;
+                particles.position.z = - SCENE.LEVEL_DEPTH * k - (s * SCENE.LEVEL_DEPTH / SCENE.NUM_SUBSETS) + SCENE.SCALE_FACTOR / 2;
                 particles.needsUpdate = 0;
                 particles.name = 'particle-cloud';
                 scene.current.add(particles);
             }
         }
+
+        currentOrbit.current = orbit;
 
         // Setup listeners
         document.addEventListener('mousemove', onDocumentMouseMove, false);
@@ -244,8 +232,46 @@ function Navigator(props) {
         window.addEventListener('keypress', onKeyPress, false);
         window.addEventListener('keydown', onKeyDown, false);
 
-        setInterval(updateOrbit, 4000);
+        setInterval(updateScene, 4000);
 
+    }
+
+    const updateScene = () => {
+
+        incrementSeed();
+        const rng = prng_alea(seed.current);
+
+        let points = scene.current.children.filter(child => child.name === "particle-cloud");
+
+        for (let s = 0; s < SCENE.NUM_SUBSETS; s++) {
+            hueValues[s] = rng();
+        }
+        for (let i = 0; i < points.length; i++) {
+            points[i].needsUpdate = 1;
+        }
+
+        currentOrbit.current = generateOrbit({ ...currentOrbit.current }, ORBIT, SCENE, rng);
+
+        const subsets = currentOrbit.current.subsets;
+        const scale_factor_l = SCENE.SCALE_FACTOR;
+        const num_points_subset_l = SCENE.NUM_POINTS_SUBSET;
+        const xMax = currentOrbit.current.xMax;
+        const xMin = currentOrbit.current.xMin;
+        const yMin = currentOrbit.current.yMin;
+        const yMax = currentOrbit.current.yMax;
+        const scaleX = 2 * scale_factor_l / (xMax - xMin);
+        const scaleY = 2 * scale_factor_l / (yMax - yMin);
+        for (let k = 0, idx = 0; k < SCENE.NUM_LEVELS; k++) {
+            for (let s = 0; s < SCENE.NUM_SUBSETS; s++, idx++) {
+                for (let i = 0; i < num_points_subset_l; i++) {
+                    // update existing points in orbit    
+                    points[idx].geometry.attributes.position.setXY(
+                        i,
+                        scaleX * (subsets[s][i].x - xMin) - scale_factor_l,
+                        scaleY * (subsets[s][i].y - yMin) - scale_factor_l);
+                }
+            }
+        }
     }
 
     function buildController(data) {
@@ -289,9 +315,9 @@ function Navigator(props) {
             // const object = room.children[ count ++ ];
 
             // object.position.copy( controller.position );
-            // object.userData.velocity.x = ( Math.random() - 0.5 ) * 3;
-            // object.userData.velocity.y = ( Math.random() - 0.5 ) * 3;
-            // object.userData.velocity.z = ( Math.random() - 9 );
+            // object.userData.velocity.x = ( rng() - 0.5 ) * 3;
+            // object.userData.velocity.y = ( rng() - 0.5 ) * 3;
+            // object.userData.velocity.z = ( rng() - 9 );
             // object.userData.velocity.applyQuaternion( controller.quaternion );
 
             // if ( count === room.children.length ) count = 0;
@@ -315,14 +341,14 @@ function Navigator(props) {
             points[i].position.z += speed;
             points[i].rotation.z += rotationSpeed;
             // if the particle level has passed the fade distance
-            if (points[i].position.z >= ((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH + SCALE_FACTOR) {
+            if (points[i].position.z >= ((SCENE.NUM_LEVELS / 2) - 1) * SCENE.LEVEL_DEPTH + SCENE.SCALE_FACTOR) {
                 // move the particle level back in front of the camera
-                points[i].position.z = -((NUM_LEVELS / 2) - 1) * LEVEL_DEPTH;
+                points[i].position.z = -((SCENE.NUM_LEVELS / 2) - 1) * SCENE.LEVEL_DEPTH;
                 if (points[i].needsUpdate === 1) {
                     // update the geometry and color
                     points[i].geometry.attributes.position.needsUpdate = true;
 
-                    points[i].myMaterial.color.setHSL(hueValues[points[i].mySubset], DEF_SATURATION, DEF_BRIGHTNESS);
+                    points[i].myMaterial.color.setHSL(hueValues[points[i].mySubset], SCENE.DEF_SATURATION, SCENE.DEF_BRIGHTNESS);
                     points[i].needsUpdate = 0;
 
                 }
@@ -343,37 +369,37 @@ function Navigator(props) {
 
             const xrCam = xrCameraGroup.current.children[0];
             if (!xrCam) return;
-            
 
-            if ( xrCameraGroup.current.position.x >= - CAMERA_BOUND &&  xrCameraGroup.current.position.x <= CAMERA_BOUND) {
-                 xrCameraGroup.current.position.x += (mouseX -  xrCameraGroup.current.position.x) * 0.05;
-                if ( xrCameraGroup.current.position.x < - CAMERA_BOUND)  xrCameraGroup.current.position.x = -CAMERA_BOUND;
-                if ( xrCameraGroup.current.position.x > CAMERA_BOUND)  xrCameraGroup.current.position.x = CAMERA_BOUND;
+
+            if (xrCameraGroup.current.position.x >= - SCENE.CAMERA_BOUND && xrCameraGroup.current.position.x <= SCENE.CAMERA_BOUND) {
+                xrCameraGroup.current.position.x += (mouseX - xrCameraGroup.current.position.x) * 0.05;
+                if (xrCameraGroup.current.position.x < - SCENE.CAMERA_BOUND) xrCameraGroup.current.position.x = -SCENE.CAMERA_BOUND;
+                if (xrCameraGroup.current.position.x > SCENE.CAMERA_BOUND) xrCameraGroup.current.position.x = SCENE.CAMERA_BOUND;
             }
-            if ( xrCameraGroup.current.position.y >= - CAMERA_BOUND &&  xrCameraGroup.current.position.y <= CAMERA_BOUND) {
-                 xrCameraGroup.current.position.y += (- mouseY -  xrCameraGroup.current.position.y) * 0.05;
-                if ( xrCameraGroup.current.position.y < - CAMERA_BOUND)  xrCameraGroup.current.position.y = -CAMERA_BOUND;
-                if ( xrCameraGroup.current.position.y > CAMERA_BOUND)  xrCameraGroup.current.position.y = CAMERA_BOUND;
+            if (xrCameraGroup.current.position.y >= - SCENE.CAMERA_BOUND && xrCameraGroup.current.position.y <= SCENE.CAMERA_BOUND) {
+                xrCameraGroup.current.position.y += (- mouseY - xrCameraGroup.current.position.y) * 0.05;
+                if (xrCameraGroup.current.position.y < - SCENE.CAMERA_BOUND) xrCameraGroup.current.position.y = -SCENE.CAMERA_BOUND;
+                if (xrCameraGroup.current.position.y > SCENE.CAMERA_BOUND) xrCameraGroup.current.position.y = SCENE.CAMERA_BOUND;
             }
 
-            const vector = new Vector3( 0, 0, -1 );
-            vector.applyQuaternion( xrCameraGroup.current.quaternion );
+            const vector = new Vector3(0, 0, -1);
+            vector.applyQuaternion(xrCameraGroup.current.quaternion);
 
             xrCam.updateWorldMatrix(true, true);
 
             renderer.current.render(scene.current, xrCam);
             return;
 
-            
-            
+
+
             // cLeft.quaternion.set(0,0,0,0);
             // cRight.quaternion.set(0,0,0,0);
 
-           
-            
+
+
             // from middle to one end
-            // cLeft.lookAt(0,0,-(SCALE_FACTOR / 4));
-            // cRight.lookAt(0,0,-(SCALE_FACTOR / 4));
+            // cLeft.lookAt(0,0,-(SCENE.SCALE_FACTOR / 4));
+            // cRight.lookAt(0,0,-(SCENE.SCALE_FACTOR / 4));
 
 
             //const quaternion = new Quaternion();
@@ -383,20 +409,20 @@ function Navigator(props) {
             // cRight.applyQuaternion(quaternion); // Apply Quaternion
             // cRight.quaternion.normalize();  // Normalize Quaternion
 
-            
+
             //renderer.current.render(scene.current, camera.current);
 
         } else {
             // move the camera position based on mouse position/taps
-            if (camera.current.position.x >= - CAMERA_BOUND && camera.current.position.x <= CAMERA_BOUND) {
+            if (camera.current.position.x >= - SCENE.CAMERA_BOUND && camera.current.position.x <= SCENE.CAMERA_BOUND) {
                 camera.current.position.x += (mouseX - camera.current.position.x) * 0.05;
-                if (camera.current.position.x < - CAMERA_BOUND) camera.current.position.x = -CAMERA_BOUND;
-                if (camera.current.position.x > CAMERA_BOUND) camera.current.position.x = CAMERA_BOUND;
+                if (camera.current.position.x < - SCENE.CAMERA_BOUND) camera.current.position.x = -SCENE.CAMERA_BOUND;
+                if (camera.current.position.x > SCENE.CAMERA_BOUND) camera.current.position.x = SCENE.CAMERA_BOUND;
             }
-            if (camera.current.position.y >= - CAMERA_BOUND && camera.current.position.y <= CAMERA_BOUND) {
+            if (camera.current.position.y >= - SCENE.CAMERA_BOUND && camera.current.position.y <= SCENE.CAMERA_BOUND) {
                 camera.current.position.y += (- mouseY - camera.current.position.y) * 0.05;
-                if (camera.current.position.y < - CAMERA_BOUND) camera.current.position.y = -CAMERA_BOUND;
-                if (camera.current.position.y > CAMERA_BOUND) camera.current.position.y = CAMERA_BOUND;
+                if (camera.current.position.y < - SCENE.CAMERA_BOUND) camera.current.position.y = -SCENE.CAMERA_BOUND;
+                if (camera.current.position.y > SCENE.CAMERA_BOUND) camera.current.position.y = SCENE.CAMERA_BOUND;
             }
             // look straight ahead
             camera.current.lookAt(scene.current.position);
@@ -405,20 +431,20 @@ function Navigator(props) {
 
         }
 
-       
 
-        
+
+
 
     }
 
     const onSetVRSession = async (session) => {
         vrEnabled.current = true;
         await renderer.current.xr.setSession(session);
-        
-        xrCameraGroup.current.position.set(0, 0, SCALE_FACTOR / 2);
+
+        xrCameraGroup.current.position.set(0, 0, SCENE.SCALE_FACTOR / 2);
         xrCameraGroup.current.add(renderer.current.xr.getCamera());
         //camera.current = renderer.current.xr.getCamera();
-        //camera.current.position.set(0, 0, SCALE_FACTOR / 2);
+        //camera.current.position.set(0, 0, SCENE.SCALE_FACTOR / 2);
     }
 
     const onEndVRSession = (session) => {
@@ -428,129 +454,9 @@ function Navigator(props) {
     }
 
 
-    ///////////////////////////////////////////////
-    // Hopalong Orbit Generator
-    ///////////////////////////////////////////////
-    const updateOrbit = () => {
-
-        for (let s = 0; s < NUM_SUBSETS; s++) {
-            hueValues[s] = Math.random();
-        }
-        const points = scene.current.children.filter(child => child.name === "particle-cloud");
-        for (let i = 0; i < points.length; i++) {
-            points[i].needsUpdate = 1;
-        }
-        currentOrbit.current = generateAndUpdateOrbit({ ...currentOrbit.current });
 
 
-    }
 
-    const generateAndUpdateOrbit = (orbit) => {
-        let x, y, z, x1;
-        //let idx = 0;
-
-        orbit = prepareOrbit({ ...orbit });
-
-        let al = orbit.a;
-        let bl = orbit.b;
-        let cl = orbit.c;
-        let dl = orbit.d;
-        let el = orbit.e;
-        let subsets = orbit.subsets;
-        let num_points_subset_l = NUM_POINTS_SUBSET;
-        let scale_factor_l = SCALE_FACTOR;
-
-        let xMin = 0, xMax = 0, yMin = 0, yMax = 0;
-
-        for (let s = 0; s < NUM_SUBSETS; s++) {
-
-            // Use a different starting point for each orbit subset
-            x = s * 0.005 * (0.5 - Math.random());
-            y = s * 0.005 * (0.5 - Math.random());
-
-            let curSubset = subsets[s];
-
-            for (let i = 0; i < num_points_subset_l; i++) {
-
-                // Iteration formula (generalization of the Barry Martin's original one)
-                z = (dl + Math.sqrt(Math.abs(bl * x - cl)));
-                if (x > 0) { x1 = y - z; }
-                else if (x === 0) { x1 = y; }
-                else { x1 = y + z; }
-                y = al - x;
-                x = x1 + el;
-
-                curSubset[i].x = x;
-                curSubset[i].y = y;
-
-                if (x < xMin) { xMin = x; }
-                else if (x > xMax) { xMax = x; }
-                if (y < yMin) { yMin = y; }
-                else if (y > yMax) { yMax = y; }
-
-                //idx++;
-            }
-        }
-
-        let scaleX = 2 * scale_factor_l / (xMax - xMin);
-        let scaleY = 2 * scale_factor_l / (yMax - yMin);
-
-        orbit.xMin = xMin;
-        orbit.xMax = xMax;
-        orbit.yMin = yMin;
-        orbit.yMax = yMax;
-        orbit.scaleX = scaleX;
-        orbit.scaleY = scaleY;
-
-        // find all points
-        const points = scene.current.children.filter(child => child.name === "particle-cloud");
-
-        if (points.length === 0) {
-            // Normalize vertex data
-            for (let k = 0, idx = 0; k < NUM_LEVELS; k++) {
-                for (let s = 0; s < NUM_SUBSETS; s++, idx++) {
-                    let curSubset = subsets[s];
-                    for (let i = 0; i < num_points_subset_l; i++) {
-                        curSubset[i].vertex.x = scaleX * (curSubset[i].x - xMin) - scale_factor_l;
-                        curSubset[i].vertex.y = scaleY * (curSubset[i].y - yMin) - scale_factor_l;;
-                    }
-                }
-            }
-        } else {
-            // Normalize AND update vertex data
-            for (let k = 0, idx = 0; k < NUM_LEVELS; k++) {
-                for (let s = 0; s < NUM_SUBSETS; s++, idx++) {
-                    let curSubset = subsets[s];
-                    for (let i = 0; i < num_points_subset_l; i++) {
-                        const vertexX = scaleX * (curSubset[i].x - xMin) - scale_factor_l;
-                        const vertexY = scaleY * (curSubset[i].y - yMin) - scale_factor_l;
-                        curSubset[i].vertex.x = vertexX
-                        curSubset[i].vertex.y = vertexY;
-                        // update existing points in orbit    
-                        points[idx].geometry.attributes.position.setXY(i, vertexX, vertexY);
-                    }
-                }
-            }
-        }
-        return orbit;
-
-    }
-
-    const prepareOrbit = (orbit) => {
-        //shuffle params
-        orbit.a = A_MIN + Math.random() * (A_MAX - A_MIN);
-        orbit.b = B_MIN + Math.random() * (B_MAX - B_MIN);
-        orbit.c = C_MIN + Math.random() * (C_MAX - C_MIN);
-        orbit.d = D_MIN + Math.random() * (D_MAX - D_MIN);
-        orbit.e = E_MIN + Math.random() * (E_MAX - E_MIN);
-
-        orbit.xMin = 0;
-        orbit.xMax = 0;
-        orbit.yMin = 0;
-        orbit.yMax = 0;
-
-        return orbit;
-    }
 
     ///////////////////////////////////////////////
     // Event listeners
@@ -617,7 +523,7 @@ function Navigator(props) {
             //   // reset the sensor on enable
             //   vrHMDSensor.zeroSensor();
             //   // reset the camera position
-            //   camera.current.position.set(0, 0, SCALE_FACTOR / 2);
+            //   camera.current.position.set(0, 0, SCENE.SCALE_FACTOR / 2);
             //   // hide the mouse, and set the device pixel ratio to 1
             //   renderer.devicePixelRatio = 1;
             // }

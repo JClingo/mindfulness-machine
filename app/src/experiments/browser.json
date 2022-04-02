@@ -1,0 +1,62 @@
+{
+    "id": "browser",
+    "description": "Browser-based pilot",
+    "title": "Hopalong Orbits Pilot",
+    "settings": {
+        "isVR": false,
+        "startingSeed": 1,
+        "SCENE": {
+            "SPRITE_SCALE_FACTOR": 800,
+            "SCALE_FACTOR": 1600,
+            "CAMERA_BOUND": 200,
+            "NUM_POINTS_SUBSET": 25000,
+            "NUM_SUBSETS": 7,                      
+            "NUM_LEVELS": 10,
+            "LEVEL_DEPTH": 400,                        
+            "DEF_BRIGHTNESS": 0.5,
+            "DEF_SATURATION": 1
+        },
+        "ORBIT": {
+            "A_MIN": -30,
+            "A_MAX": 30,
+            "B_MIN": 0.2,
+            "B_MAX": 1.8,
+            "C_MIN": 5,
+            "C_MAX": 17,
+            "D_MIN": 0,
+            "D_MAX": 10,
+            "E_MIN": 0,
+            "E_MAX": 12
+        }
+
+    },
+    "responses": [
+        {
+            "id": "res-start",
+            "type": "NEXT",
+            "content": {
+                "description": "Welcome to the experience!",
+                "submitLabel": "Start"
+            }
+        },
+        {
+            "id": "res-survey",
+            "type": "SURVEY",
+            "content": {
+                "src": "https://ucmerced.az1.qualtrics.com/jfe/form/SV_5vtpejvrl5g493E"
+            }
+        }
+    ],
+    "steps": [
+        {
+            "id": "start",
+            "type": "NEXT"
+        },
+        {
+            "id": "vr-training",
+            "type": "VR"
+        }
+
+
+    ]
+}
