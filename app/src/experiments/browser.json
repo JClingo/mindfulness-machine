@@ -4,7 +4,8 @@
     "title": "Hopalong Orbits Pilot",
     "settings": {
         "isVR": false,
-        "startingSeed": 1,
+        "startingSeed": 1111,
+        "mousePixelThreshold": 300,
         "SCENE": {
             "SPRITE_SCALE_FACTOR": 800,
             "SCALE_FACTOR": 1600,
@@ -30,32 +31,104 @@
         }
 
     },
-    "responses": [
-        {
-            "id": "res-start",
-            "type": "NEXT",
-            "content": {
-                "description": "Welcome to the experience!",
-                "submitLabel": "Start"
-            }
-        },
-        {
-            "id": "res-survey",
-            "type": "SURVEY",
-            "content": {
-                "src": "https://ucmerced.az1.qualtrics.com/jfe/form/SV_5vtpejvrl5g493E"
-            }
-        }
-    ],
     "steps": [
         {
-            "id": "start",
-            "type": "NEXT"
+            "id": "training-intro",
+            "type": "TRAINING",
+            "settings": {
+                "speed": 1.0,
+                "rotationSpeed": -0.004
+            },
+            "sequences": [
+                {
+                    "id": "training-intro-1",
+                    "display": "Welcome to the experience",
+                    "type": "TIMED",
+                    "duration": 3000
+                },
+                {
+                    "id": "training-intro-2",
+                    "display": "Please take a second to test the controls",
+                    "type": "TIMED",
+                    "duration": 3000
+                },
+                {
+                    "id": "training-intro-3",
+                    "display": "Use the <strong>up</strong> and <strong>down</strong> arrow keys to increase or decrease your speed",
+                    "type": "TIMED",
+                    "duration": 3000
+                },
+                {
+                    "id": "training-intro-3",
+                    "display": "Use the <strong>up</strong> and <strong>down</strong> arrow keys to increase or decrease your speed<br/>Try it now",
+                    "type": "INPUT",
+                    "input": "SPEED"
+                },
+                {
+                    "id": "training-intro-4",
+                    "display": "Use the <strong>left</strong> and <strong>right</strong> arrow keys to change the rotation direction and speed",
+                    "type": "TIMED",
+                    "duration": 3000
+                },
+                {
+                    "id": "training-intro-5",
+                    "display": "Use the <strong>left</strong> and <strong>right</strong> arrow keys to change the rotation direction and speed<br/>Try it now",
+                    "type": "INPUT",
+                    "input": "ROTATION_SPEED"
+                },
+                {
+                    "id": "training-intro-6",
+                    "display": "Now, move your cursor around to control your trajectory",
+                    "type": "TIMED",
+                    "duration": 3000
+                },
+                {
+                    "id": "training-intro-7",
+                    "display": "Now, move your cursor around to control your trajectory<br/>Try it now",
+                    "type": "INPUT",
+                    "input": "MOUSE"
+                },
+                {
+                    "id": "training-intro-7",
+                    "display": "Great! Now, relax and explore with these controls however you want<br>We'll let you know when you're done",
+                    "type": "TIMED",
+                    "duration": 3000
+                }
+            ]
         },
         {
-            "id": "vr-training",
-            "type": "VR"
+            "id": "navigator",
+            "type": "NAVIGATOR",
+            "duration": 36000,
+            "settings": {
+                "speed": 2.0,
+                "rotationSpeed": -0.004
+            }
+        },
+        {
+            "id": "outro",
+            "type": "OUTRO",
+            "settings": {
+                "speed": 1.0,
+                "rotationSpeed": -0.004
+            },
+            "sequences": [
+                {
+                    "id": "outro-1",
+                    "display": "Thank you for your participation",
+                    "type": "TIMED",
+                    "duration": 3000
+                },
+                {
+                    "id": "outro-2",
+                    "display": "You have completed the task<br/>When you're ready, copy the following code and enter it into the survey:",
+                    "type": "CODE"
+                }
+                
+            ]
         }
+
+
 
 
     ]

@@ -26,20 +26,21 @@ import { VRButton } from './VRButton';
 import { generateOrbit } from '../services/navigator';
 
 
-function Navigator({ useStore }) {
+export function Navigator({ useStore }) {
 
-
-    //const seed = useStore(state => state.seed);
+    const experimentSettings = useStore(state => state.experiment).settings;
+    const stepIdx = useStore(state => state.stepIdx);
     const seed = useRef(useStore.getState().seed);
     const incrementSeed = useStore(state => state.incrementSeed);
-    const experimentSettings = useStore(state => state.experiment).settings;
+    const speed = useRef(useStore.getState().speed);
+    const rotationSpeed = useRef(useStore.getState().rotationSpeed);
+    
     const { SCENE, ORBIT } = experimentSettings;
     
     const canvasEl = useRef(null);
 
 
-    let speed = 2.0;
-    let rotationSpeed = -0.004;
+    
     let currentOrbit = useRef({
         // params
         a: 0,
@@ -58,11 +59,19 @@ function Navigator({ useStore }) {
     });
 
     useEffect(() => {
-        useStore.subscribe(state => seed.current = state.seed);
+        useStore.subscribe(state => { 
+            seed.current = state.seed;
+            speed.current = state.speed;
+            rotationSpeed.current = state.rotationSpeed;
+        });
+    }, [])
+
+    useEffect(() => {
+        
+        // todo -- make init actually reset everything
         init();
         animate();
-
-    })
+    }, [stepIdx])
 
     const spriteSize = useRef(Math.ceil(3 * window.innerWidth / SCENE.SPRITE_SCALE_FACTOR));
 
@@ -76,11 +85,10 @@ function Navigator({ useStore }) {
     const controllerGrip1 = useRef(null);
     const controllerGrip2 = useRef(null);
 
-
     let hueValues = [];
     //let vrHMD, vrHMDSensor;
 
-    let mouseX = 0, mouseY = 0;
+    let cursorX = 0, cursorY = 0;
     let renderTargetWidth = window.innerWidth;
     let renderTargetHeight = window.innerHeight;
 
@@ -309,8 +317,8 @@ function Navigator({ useStore }) {
 
 
 
-            //mouseX = event.clientX - windowHalfX;
-            //mouseY = event.clientY - windowHalfY;
+            //cursorX = event.clientX - windowHalfX;
+            //cursorY = event.clientY - windowHalfY;
 
             // const object = room.children[ count ++ ];
 
@@ -338,8 +346,8 @@ function Navigator({ useStore }) {
 
         // update particle positions
         for (let i = 0; i < points.length; i++) {
-            points[i].position.z += speed;
-            points[i].rotation.z += rotationSpeed;
+            points[i].position.z += speed.current;
+            points[i].rotation.z += rotationSpeed.current;
             // if the particle level has passed the fade distance
             if (points[i].position.z >= ((SCENE.NUM_LEVELS / 2) - 1) * SCENE.LEVEL_DEPTH + SCENE.SCALE_FACTOR) {
                 // move the particle level back in front of the camera
@@ -372,12 +380,12 @@ function Navigator({ useStore }) {
 
 
             if (xrCameraGroup.current.position.x >= - SCENE.CAMERA_BOUND && xrCameraGroup.current.position.x <= SCENE.CAMERA_BOUND) {
-                xrCameraGroup.current.position.x += (mouseX - xrCameraGroup.current.position.x) * 0.05;
+                xrCameraGroup.current.position.x += (cursorX - xrCameraGroup.current.position.x) * 0.05;
                 if (xrCameraGroup.current.position.x < - SCENE.CAMERA_BOUND) xrCameraGroup.current.position.x = -SCENE.CAMERA_BOUND;
                 if (xrCameraGroup.current.position.x > SCENE.CAMERA_BOUND) xrCameraGroup.current.position.x = SCENE.CAMERA_BOUND;
             }
             if (xrCameraGroup.current.position.y >= - SCENE.CAMERA_BOUND && xrCameraGroup.current.position.y <= SCENE.CAMERA_BOUND) {
-                xrCameraGroup.current.position.y += (- mouseY - xrCameraGroup.current.position.y) * 0.05;
+                xrCameraGroup.current.position.y += (- cursorY - xrCameraGroup.current.position.y) * 0.05;
                 if (xrCameraGroup.current.position.y < - SCENE.CAMERA_BOUND) xrCameraGroup.current.position.y = -SCENE.CAMERA_BOUND;
                 if (xrCameraGroup.current.position.y > SCENE.CAMERA_BOUND) xrCameraGroup.current.position.y = SCENE.CAMERA_BOUND;
             }
@@ -415,12 +423,12 @@ function Navigator({ useStore }) {
         } else {
             // move the camera position based on mouse position/taps
             if (camera.current.position.x >= - SCENE.CAMERA_BOUND && camera.current.position.x <= SCENE.CAMERA_BOUND) {
-                camera.current.position.x += (mouseX - camera.current.position.x) * 0.05;
+                camera.current.position.x += (cursorX - camera.current.position.x) * 0.05;
                 if (camera.current.position.x < - SCENE.CAMERA_BOUND) camera.current.position.x = -SCENE.CAMERA_BOUND;
                 if (camera.current.position.x > SCENE.CAMERA_BOUND) camera.current.position.x = SCENE.CAMERA_BOUND;
             }
             if (camera.current.position.y >= - SCENE.CAMERA_BOUND && camera.current.position.y <= SCENE.CAMERA_BOUND) {
-                camera.current.position.y += (- mouseY - camera.current.position.y) * 0.05;
+                camera.current.position.y += (- cursorY - camera.current.position.y) * 0.05;
                 if (camera.current.position.y < - SCENE.CAMERA_BOUND) camera.current.position.y = -SCENE.CAMERA_BOUND;
                 if (camera.current.position.y > SCENE.CAMERA_BOUND) camera.current.position.y = SCENE.CAMERA_BOUND;
             }
@@ -462,23 +470,23 @@ function Navigator({ useStore }) {
     // Event listeners
     ///////////////////////////////////////////////
     const onDocumentMouseMove = (event) => {
-        mouseX = event.clientX - windowHalfX;
-        mouseY = event.clientY - windowHalfY;
+        cursorX = event.clientX - windowHalfX;
+        cursorY = event.clientY - windowHalfY;
     }
 
     const onDocumentTouchStart = (event) => {
         if (event.touches.length === 1) {
             event.preventDefault();
-            mouseX = event.touches[0].pageX - windowHalfX;
-            mouseY = event.touches[0].pageY - windowHalfY;
+            cursorX = event.touches[0].pageX - windowHalfX;
+            cursorY = event.touches[0].pageY - windowHalfY;
         }
     }
 
     const onDocumentTouchMove = (event) => {
         if (event.touches.length === 1) {
             event.preventDefault();
-            mouseX = event.touches[0].pageX - windowHalfX;
-            mouseY = event.touches[0].pageY - windowHalfY;
+            cursorX = event.touches[0].pageX - windowHalfX;
+            cursorY = event.touches[0].pageY - windowHalfY;
         }
     }
 
@@ -569,11 +577,12 @@ function Navigator({ useStore }) {
     }
 
     const onKeyDown = (event) => {
-        // hande up/down/left/right keys
-        if (event.keyCode === 38 && speed < 20) speed += 0.5;
-        else if (event.keyCode === 40 && speed > 0.5) speed -= 0.5;
-        else if (event.keyCode === 37) rotationSpeed += 0.001;
-        else if (event.keyCode === 39) rotationSpeed -= 0.001;
+        // hande up/down/left/right, wasd keys
+        if ((event.keyCode === 38 || event.keyCode === 87) && speed.current < 20) speed.current += 0.5;
+        else if ((event.keyCode === 40 || event.keyCode === 83) && speed.current > 0.5) speed.current -= 0.5;
+        // TODO: figure out reasonable cap on rotation speed
+        else if (event.keyCode === 37 || event.keyCode === 65) rotationSpeed.current += 0.001;
+        else if (event.keyCode === 39 || event.keyCode === 68) rotationSpeed.current -= 0.001;
     }
 
     const onKeyPress = (event) => {
@@ -605,7 +614,7 @@ function Navigator({ useStore }) {
     return (
         <div className="Navigator">
             <canvas ref={canvasEl}></canvas>
-            {<VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
+            {experimentSettings.isVR && <VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
         </div>
     );
 }
