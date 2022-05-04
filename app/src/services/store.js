@@ -3,18 +3,50 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import experimentSrc from '../experiments/browser.json';
 import { STEP_TYPE, SEQUENCE_TYPE } from '../models/experiment';
 import { getNextStep, getNextSequence } from '../services/experiment';
+import firebase, { initializeApp } from 'firebase/app';
+// import 'firebase/firestore';
+import { getFirestore, serverTimestamp, collection, doc, getDoc, setDoc } from 'firebase/firestore/lite';
+import firebaseConfig from '../settings/firebase-config';
+import { randomInt } from '../utilities/rng';
+
 
 const useStore = create(subscribeWithSelector(((set,get) => {
 
+    const dbRoot = `Experiments/${experimentSrc.id}/Participants`;
+    const db = getFirestore(initializeApp(firebaseConfig));
+    const participantId = randomInt(1000000000, 1999999999);
+
+    const fetchData = async () => {        
+        //const participantsRef = db.collection(dbRoot);
+        //const participantsRef = await getDocs(collection(db))
+        
+        const session = {
+            createdAt: serverTimestamp(),
+            experimentId: experimentSrc.id
+        };
+
+        const participantsRef = await doc(db, "Experiments", experimentSrc.id);
+        const participantsSnap = await getDoc(participantsRef);
+        if (participantsSnap.exists()) {
+            await setDoc(doc(participantsRef, "Participant", participantId.toString()), session);
+            console.log("Creating participant log...", session);
+          } else {
+            console.log("Could not create participant log!");
+          }       
+        
+    }
+      
+    fetchData();
+
+
     return {
         experiment: experimentSrc,
+        participantId: participantId,
+        dbRoot: dbRoot,
         timerSpeed: 1, // set to change how fast/slow time passes
         activeId: null, // id of active step/sequence
         seed: experimentSrc.settings.startingSeed,
-        incrementSeed: () => { 
-            set(state => ({seed: state.seed + 1}));
-            console.log(get().seed);
-        },
+        incrementSeed: () => { set(state => ({seed: state.seed + 1}))},
         navigator: {
             speed: 0, // initial navigator settings -- get set by each step
             rotationSpeed: 0,
@@ -30,7 +62,8 @@ const useStore = create(subscribeWithSelector(((set,get) => {
             }
         },
         timerDuration: -1,
-        setTimerDuration: (duration) => set({timerDuration: duration})
+        setTimerDuration: (duration) => set({timerDuration: duration}),
+        db: db
      }
 })));   
 
