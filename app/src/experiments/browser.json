@@ -4,7 +4,7 @@
     "title": "Hopalong Orbits Pilot",
     "settings": {
         "isVR": false,
-        "startingSeed": 1111,
+        "startingSeed": 1149,
         "mousePixelThreshold": 300,
         "SCENE": {
             "SPRITE_SCALE_FACTOR": 800,
@@ -59,37 +59,37 @@
                     "duration": 3000
                 },
                 {
-                    "id": "training-intro-3",
+                    "id": "training-intro-4",
                     "display": "Use the <strong>up</strong> and <strong>down</strong> arrow keys to increase or decrease your speed<br/>Try it now",
                     "type": "INPUT",
                     "input": "SPEED"
                 },
                 {
-                    "id": "training-intro-4",
+                    "id": "training-intro-5",
                     "display": "Use the <strong>left</strong> and <strong>right</strong> arrow keys to change the rotation direction and speed",
                     "type": "TIMED",
                     "duration": 3000
                 },
                 {
-                    "id": "training-intro-5",
+                    "id": "training-intro-6",
                     "display": "Use the <strong>left</strong> and <strong>right</strong> arrow keys to change the rotation direction and speed<br/>Try it now",
                     "type": "INPUT",
                     "input": "ROTATION_SPEED"
                 },
                 {
-                    "id": "training-intro-6",
+                    "id": "training-intro-7",
                     "display": "Now, move your cursor around to control your trajectory",
                     "type": "TIMED",
                     "duration": 3000
                 },
                 {
-                    "id": "training-intro-7",
+                    "id": "training-intro-8",
                     "display": "Now, move your cursor around to control your trajectory<br/>Try it now",
                     "type": "INPUT",
                     "input": "MOUSE"
                 },
                 {
-                    "id": "training-intro-7",
+                    "id": "training-intro-9",
                     "display": "Great! Now, relax and explore with these controls however you want<br>We'll let you know when you're done",
                     "type": "TIMED",
                     "duration": 3000

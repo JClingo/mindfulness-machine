@@ -24,23 +24,21 @@ import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerM
 
 import { VRButton } from './VRButton';
 import { generateOrbit } from '../services/navigator';
+import useStore from '../services/store';
 
 
-export function Navigator({ useStore }) {
+export function Navigator() {
 
-    const experimentSettings = useStore(state => state.experiment).settings;
-    const stepIdx = useStore(state => state.stepIdx);
-    const seed = useRef(useStore.getState().seed);
+    const initState = useStore.getState();
+    const experiment = useStore(state => state.experiment);
+    const seed = useRef(initState.seed);
     const incrementSeed = useStore(state => state.incrementSeed);
-    const speed = useRef(useStore.getState().speed);
-    const rotationSpeed = useRef(useStore.getState().rotationSpeed);
-    
-    const { SCENE, ORBIT } = experimentSettings;
-    
+    const speed = useRef(initState.navigator.speed);
+    const rotationSpeed = useRef(initState.navigator.rotationSpeed);
+      
+    const { SCENE, ORBIT } = experiment.settings;
     const canvasEl = useRef(null);
 
-
-    
     let currentOrbit = useRef({
         // params
         a: 0,
@@ -59,19 +57,25 @@ export function Navigator({ useStore }) {
     });
 
     useEffect(() => {
-        useStore.subscribe(state => { 
-            seed.current = state.seed;
-            speed.current = state.speed;
-            rotationSpeed.current = state.rotationSpeed;
+        useStore.subscribe(state => state.stepIdx, (current, prev) => { 
+            if (prev !== current) {
+                const navigator = useStore.getState().navigator;
+                speed.current = navigator.speed;
+                rotationSpeed.current = navigator.rotationSpeed;
+                const currentSeed = useStore.getState().seed;
+                seed.current = currentSeed;
+                start();
+            }
+            
         });
+        
+
     }, [])
 
-    useEffect(() => {
-        
-        // todo -- make init actually reset everything
+    const start = () => {
         init();
         animate();
-    }, [stepIdx])
+    }
 
     const spriteSize = useRef(Math.ceil(3 * window.innerWidth / SCENE.SPRITE_SCALE_FACTOR));
 
@@ -191,7 +195,6 @@ export function Navigator({ useStore }) {
 
         camera.current = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCENE.SCALE_FACTOR);
         camera.current.position.set(0, 0, SCENE.SCALE_FACTOR / 2);
-
         
         const rng = prng_alea(seed.current);
         orbit = generateOrbit({ ...orbit }, ORBIT, SCENE, rng);
@@ -247,6 +250,8 @@ export function Navigator({ useStore }) {
     const updateScene = () => {
 
         incrementSeed();
+        const currentSeed = useStore.getState().seed;
+        seed.current = currentSeed;
         const rng = prng_alea(seed.current);
 
         let points = scene.current.children.filter(child => child.name === "particle-cloud");
@@ -578,11 +583,25 @@ export function Navigator({ useStore }) {
 
     const onKeyDown = (event) => {
         // hande up/down/left/right, wasd keys
-        if ((event.keyCode === 38 || event.keyCode === 87) && speed.current < 20) speed.current += 0.5;
-        else if ((event.keyCode === 40 || event.keyCode === 83) && speed.current > 0.5) speed.current -= 0.5;
-        // TODO: figure out reasonable cap on rotation speed
-        else if (event.keyCode === 37 || event.keyCode === 65) rotationSpeed.current += 0.001;
-        else if (event.keyCode === 39 || event.keyCode === 68) rotationSpeed.current -= 0.001;
+        if ((event.keyCode === 38 || event.keyCode === 87) && speed.current < 20) {
+            speed.current += 0.5;
+            return;
+        }
+        if ((event.keyCode === 40 || event.keyCode === 83) && speed.current > 0.5) {
+            speed.current -= 0.5;
+            return;
+        };
+        if (event.keyCode === 37 || event.keyCode === 65) {
+            if (rotationSpeed.current < 0.1) {
+                rotationSpeed.current += 0.001;
+            }
+            return;
+        } if (event.keyCode === 39 || event.keyCode === 68) { 
+            if (rotationSpeed.current > -0.1) {
+                rotationSpeed.current -= 0.001; 
+            }
+            return;
+        }
     }
 
     const onKeyPress = (event) => {
@@ -614,7 +633,7 @@ export function Navigator({ useStore }) {
     return (
         <div className="Navigator">
             <canvas ref={canvasEl}></canvas>
-            {experimentSettings.isVR && <VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
+            {experiment.settings.isVR && <VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
         </div>
     );
 }

@@ -1,122 +1,57 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { STEP_TYPE, SEQUENCE_TYPE, INPUT_TYPE } from '../models/experiment';
+import { INPUT_TYPE } from '../models/experiment';
 import { Navigator } from './Navigator';
 import { UI } from './UI';
-import { getNextStep, getNextSequence } from '../services/experiment';
+import { Timer } from './Timer';
 
-export function Controller({ useStore }) {
+import useStore from '../services/store';
+
+export function Controller() {
 
     const experiment = useStore(state => state.experiment);
-    
-    const incrementStepIdx = useStore(state => state.incrementStepIdx);
-    const stepIdx = useStore(state => state.stepIdx);
-    const sequenceIdx = useStore(state => state.sequenceIdx);
-    const incrementSequenceIdx = useStore(state => state.incrementSequenceIdx);
-    const resetSequenceIdx = useStore(state => state.resetSequenceIdx);
-    const setSpeed = useStore(state => state.setSpeed);
-    const setRotationSpeed = useStore(state => state.setRotationSpeed);
-    const timerSpeed = useStore(state => state.timerSpeed);
-    const timerDuration = useStore(state => state.timerDuration);
-    const setTimerDuration = useStore(state => state.setTimerDuration);
-    
-
-    const [ms, setMs] = useState(0);
+    const stateActions = useStore(state => state.stateActions);    
     const mouseMovement = useRef(0);
-
     
-
-
-    const interval = useRef(null);
 
     useEffect(() => {
-        // start experiment
-        startCounter();
-        // const step = experiment.steps[stepIdx];
-        // setSpeed(step.settings.speed);
-        // setRotationSpeed(step.settings.rotationSpeed);
-        // setTimerDuration(step.settings.timerDuration);
-        changeState();
-
-       
-            // useStore.subscribe(state => state.stepIdx, (stepIdx, _) => {
-
-            //     configureStep();
-            //     resetCounter();
-            // });
-
-        // setup input listeners
-
         
+        // start experiment
+        stateActions.init();
+
+
+        const activeIdSubscriber = useStore.subscribe(state => state.activeId, (current, prev) => { 
+            if (current) activeChanged(current);          
+        });
 
         return () => {
-
+            activeIdSubscriber();
         }
         
 
     }, [])
 
-    useEffect(() => {
-        if (timerDuration <= 0) return;
-        if (ms >= timerDuration) changeState();
-    }, [ms])
+    
 
-    const changeState = () => {
-        const step = experiment.steps[stepIdx];
-
-        switch(step.type) {
-            case (STEP_TYPE.TRAINING):
-            case (STEP_TYPE.OUTRO):
-                changeSequence();
-                if (sequenceIdx < 0) changeStep();
-                break;
-            case (STEP_TYPE.NAVIGATOR):
-                changeStep();
-                break;
-            default: 
-                resetCounter();
-                break;
-        }
-        console.log('State changed');
+    const onTimerComplete = () => {
+        stateActions.increment();
     }
 
-    const changeStep = () => {
-        const nextStep = getNextStep(experiment.steps, stepIdx);
-        if (nextStep) { 
-            incrementStepIdx();
-            setTimerDuration(nextStep.duration);
-            setSpeed(nextStep.settings.speed);
-            setRotationSpeed(nextStep.settings.rotationSpeed);
-            console.log('Step changed: ' + nextStep.id);
-        };
-        if (!nextStep) console.log('No more steps');
-        resetSequenceIdx();
+    const onTimerTic = (ms) => {
+        // TODO: Use this?
     }
 
-    const changeSequence = () => {
-        
-        const nextSequence = getNextSequence(experiment.steps[stepIdx].sequences, sequenceIdx);
-        if (nextSequence) {
-            incrementSequenceIdx();
-            switch (nextSequence.type) {
-                case SEQUENCE_TYPE.TIMED:
-                    setTimerDuration(nextSequence.duration);
-                    break;
-                case SEQUENCE_TYPE.INPUT:
-                    setTimerDuration(-1);
-                    configureInput(nextSequence);
-                    break;
-                default:
-                    break;   
-            }
-            // set timerDuration if available, otherwise set to -1 (means the current state is untimed)
-            setTimerDuration(nextSequence.duration ? nextSequence.duration : -1);
-            console.log('Sequence changed: ' + nextSequence.id);
+    const activeChanged = (id) => {
+        console.log('Active id changed: ' +  id);
+
+        // check we're on a sequence chain, meaning input is a possibility
+        const sequenceIdx = useStore.getState().sequenceIdx;
+        if (sequenceIdx > -1) {
+            const stepIdx = useStore.getState().stepIdx;
+            const sequenceType = experiment.steps[stepIdx].sequences[sequenceIdx].type;
+            configureInput(sequenceType);  
         }
-        if (!nextSequence) { 
-            console.log('No more sequences');
-            resetSequenceIdx();
-        };
+
     }
 
     const configureInput = ({type}) => {
@@ -140,7 +75,7 @@ export function Controller({ useStore }) {
         if (mouseMovement.current >= experiment.settings.mousePixelThreshold) {
             document.removeEventListener('mousemove', onMouseMove);
             console.log('Mouse movement > 300 pixels');
-            changeState();
+            stateActions.increment();
         }
     }
 
@@ -156,26 +91,17 @@ export function Controller({ useStore }) {
             
         if (inputEntered) { // remove listener and move to the next state
             window.removeEventListener('keydown', onKeyDown);
-            changeState();
+            stateActions.increment();
         }
 
     }
 
 
-
-    const startCounter = () => interval.current = setInterval(() => {
-        setMs(prevState => prevState + 100);
-
-      }, 100 / timerSpeed); // once every 1/10 second, with optional offset for speeding the counter up
-    
-      const resetCounter = () => setMs(0.0);
-      const stopCounter = () => clearInterval(interval.current);
-
-
     return (
     <>
-        <Navigator useStore={useStore}/>
-        <UI useStore={useStore}></UI>
+        <Navigator />
+        <UI />
+        <Timer complete={onTimerComplete} reportCurrent={onTimerTic}/>
     </>);
     
 }
