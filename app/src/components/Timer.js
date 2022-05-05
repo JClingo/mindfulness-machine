@@ -5,7 +5,7 @@ export function Timer({reportCurrent, complete}) {
 
     const interval = useRef(null);
     const duration = useStore(state => state.timerDuration);
-    const speed = useStore(state => state.timerSpeed);
+    const timerSpeed = useStore(state => state.timerSpeed);
     const [ms, setMs] = useState(0);
 
     useEffect(() => {
@@ -30,7 +30,7 @@ export function Timer({reportCurrent, complete}) {
     const startTimer = () => interval.current = setInterval(() => {
         setMs(prevState => prevState + 100);
 
-      }, 100 / speed); // once every 1/10 second, with optional offset for speeding the timer up
+      }, 100 / timerSpeed); // once every 1/10 second, with optional offset for speeding the timer up
     
       const reset = () => setMs(0.0);
       const stop = () => clearInterval(interval.current);

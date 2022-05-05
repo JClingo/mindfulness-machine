@@ -28,7 +28,7 @@ const useStore = create(subscribeWithSelector(((set,get) => {
         const participantsRef = await doc(db, "Experiments", experimentSrc.id);
         const participantsSnap = await getDoc(participantsRef);
         if (participantsSnap.exists()) {
-            await setDoc(doc(participantsRef, "Participant", participantId.toString()), session);
+            await setDoc(doc(participantsRef, "Participants", participantId.toString()), session);
             console.log("Creating participant log...", session);
           } else {
             console.log("Could not create participant log!");
@@ -51,6 +51,7 @@ const useStore = create(subscribeWithSelector(((set,get) => {
             speed: 0, // initial navigator settings -- get set by each step
             rotationSpeed: 0,
         },
+        setNavigator: (navigator) => { set(state => ({navigator: navigator}))}, 
         stepIdx: -1,
         sequenceIdx: -1,
         stateActions: { 

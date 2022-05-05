@@ -1,11 +1,4 @@
 
-import { useState } from 'react';
-// TODO: Dynamically import
-import experimentSource from '../experiments/browser.json';
-import { ACTION } from '../models/experiment';
-
-
-
 export const getNextStep = (allSteps, currentStepIdx) => {
     if (currentStepIdx < allSteps.length-1) return allSteps[currentStepIdx+1];
     return null; // no more steps

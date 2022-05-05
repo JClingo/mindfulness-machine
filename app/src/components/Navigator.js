@@ -23,6 +23,7 @@ import { prng_alea } from 'esm-seedrandom';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
 import { VRButton } from './VRButton';
+import { Logger } from './Logger';
 import { generateOrbit } from '../services/navigator';
 import useStore from '../services/store';
 
@@ -33,11 +34,14 @@ export function Navigator() {
     const experiment = useStore(state => state.experiment);
     const seed = useRef(initState.seed);
     const incrementSeed = useStore(state => state.incrementSeed);
+    const setNavigator = useStore(state => state.setNavigator);
     const speed = useRef(initState.navigator.speed);
     const rotationSpeed = useRef(initState.navigator.rotationSpeed);
-      
+    const timerSpeed = useStore(state => state.timerSpeed);
+
     const { SCENE, ORBIT } = experiment.settings;
     const canvasEl = useRef(null);
+    const interval = useRef(null);
 
     let currentOrbit = useRef({
         // params
@@ -57,7 +61,7 @@ export function Navigator() {
     });
 
     useEffect(() => {
-        useStore.subscribe(state => state.stepIdx, (current, prev) => { 
+        const stepIdxSubscriber = useStore.subscribe(state => state.stepIdx, (current, prev) => { 
             if (prev !== current) {
                 const navigator = useStore.getState().navigator;
                 speed.current = navigator.speed;
@@ -68,6 +72,20 @@ export function Navigator() {
             }
             
         });
+
+        setInterval(() => {
+            // report current settings to state
+            setNavigator({
+                speed: speed.current,
+                rotationSpeed: rotationSpeed.current
+            })
+    
+          }, 1000 / timerSpeed); // report per second
+
+        return () => {
+            stepIdxSubscriber();
+            clearInterval(interval.current);
+        }
         
 
     }, [])
@@ -634,6 +652,7 @@ export function Navigator() {
         <div className="Navigator">
             <canvas ref={canvasEl}></canvas>
             {experiment.settings.isVR && <VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
+            <Logger/>
         </div>
     );
 }
