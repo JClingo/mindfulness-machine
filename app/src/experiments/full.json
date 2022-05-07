@@ -1,8 +1,9 @@
 {
-    "id": "browser",
+    "id": "full",
     "description": "Browser-based pilot",
     "title": "Hopalong Orbits Pilot",
     "settings": {
+        "shouldJitter": false,
         "isVR": false,
         "startingSeed": 1149,
         "mousePixelThreshold": 300,

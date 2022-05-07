@@ -215,7 +215,10 @@ export function Navigator() {
         camera.current.position.set(0, 0, SCENE.SCALE_FACTOR / 2);
         
         const rng = prng_alea(seed.current);
-        orbit = generateOrbit({ ...orbit }, ORBIT, SCENE, rng);
+
+        // TODO: Remove flag (temporary)
+
+        orbit = generateOrbit({ ...orbit }, ORBIT, SCENE, rng, experiment.settings.shouldJitter);
 
         const pointColor = new Color();
   
@@ -281,7 +284,7 @@ export function Navigator() {
             points[i].needsUpdate = 1;
         }
 
-        currentOrbit.current = generateOrbit({ ...currentOrbit.current }, ORBIT, SCENE, rng);
+        currentOrbit.current = generateOrbit({ ...currentOrbit.current }, ORBIT, SCENE, rng, experiment.settings.shouldJitter);
 
         const subsets = currentOrbit.current.subsets;
         const scale_factor_l = SCENE.SCALE_FACTOR;
@@ -652,7 +655,7 @@ export function Navigator() {
         <div className="Navigator">
             <canvas ref={canvasEl}></canvas>
             {experiment.settings.isVR && <VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
-            <Logger/>
+            {/* <Logger/> */}
         </div>
     );
 }

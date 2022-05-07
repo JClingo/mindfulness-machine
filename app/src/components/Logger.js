@@ -55,8 +55,6 @@ export function Logger() {
             y: normedY.current
         }
 
-        console.log('logState: ' + ms, record);
-
         await setDoc(doc(db, "Experiments", experiment.id, "Participants", participantId.toString(), "Steps", stepId.current, "Timestep", ms.toString()), record);
 
     }

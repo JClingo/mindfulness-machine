@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////
 // Hopalong Orbit Generator
 ///////////////////////////////////////////////
-export const generateOrbit = (orbit, O, S, rng) => {
+export const generateOrbit = (orbit, O, S, rng, shouldJitter) => {
 
     let x, y, z, x1;
 
@@ -42,8 +42,11 @@ export const generateOrbit = (orbit, O, S, rng) => {
             y = al - x;
             x = x1 + el;
 
-            curSubset[i].x = x;
-            curSubset[i].y = y;
+            const jitterX = shouldJitter ? Math.random() * 50 - 50: 0;
+            const jitterY = shouldJitter ? Math.random() * 50 - 50: 0;
+
+            curSubset[i].x = x + jitterX;
+            curSubset[i].y = y + jitterY;
 
             if (x < xMin) { xMin = x; }
             else if (x > xMax) { xMax = x; }
@@ -65,13 +68,16 @@ export const generateOrbit = (orbit, O, S, rng) => {
     orbit.scaleY = scaleY;
 
     
+
+    
     // Normalize vertex data
     for (let k = 0, idx = 0; k < S.NUM_LEVELS; k++) {
         for (let s = 0; s < S.NUM_SUBSETS; s++, idx++) {
             let curSubset = subsets[s];
             for (let i = 0; i < num_points_subset_l; i++) {
+                
                 curSubset[i].vertex.x = scaleX * (curSubset[i].x - xMin) - scale_factor_l;
-                curSubset[i].vertex.y = scaleY * (curSubset[i].y - yMin) - scale_factor_l;;
+                curSubset[i].vertex.y = scaleY * (curSubset[i].y - yMin) - scale_factor_l;
             }
         }
     }
