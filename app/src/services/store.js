@@ -59,6 +59,7 @@ const useStore = create(subscribeWithSelector(((set,get) => {
             
             set({experiment: experimentSrc});
             set({seed: experimentSrc.settings.startingSeed})
+            set({navigator: { speed: 0, rotationSpeed: 0, shouldReverse: false, canControl: false}})
             await createLog(experimentSrc);
             set({initialized: true});
         },
@@ -69,7 +70,9 @@ const useStore = create(subscribeWithSelector(((set,get) => {
         incrementSeed: () => { set(state => ({seed: state.seed + 1}))},
         navigator: {
             speed: 0, // initial navigator settings -- get set by each step
-            rotationSpeed: 0,
+            rotationSpeed: 0, 
+            shouldReverse: false,
+            canControl: true
         },
         setNavigator: (navigator) => { set(state => ({navigator: navigator}))}, 
         stepIdx: -1,

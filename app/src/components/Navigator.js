@@ -37,6 +37,8 @@ export function Navigator() {
     const setNavigator = useStore(state => state.setNavigator);
     const speed = useRef(initState.navigator.speed);
     const rotationSpeed = useRef(initState.navigator.rotationSpeed);
+    const shouldReverse = useRef(initState.navigator.shouldReverse);
+    const canControl = useRef(initState.navigator.canControl);
     const timerSpeed = useStore(state => state.timerSpeed);
 
     const { SCENE, ORBIT } = experiment.settings;
@@ -63,12 +65,22 @@ export function Navigator() {
     useEffect(() => {
         const stepIdxSubscriber = useStore.subscribe(state => state.stepIdx, (current, prev) => { 
             if (prev !== current) {
-                const navigator = useStore.getState().navigator;
-                speed.current = navigator.speed;
-                rotationSpeed.current = navigator.rotationSpeed;
+
+                if (prev) {
+                    unsetListeners(); // clear out past event listeners
+                }
+ 
+                const navigatorSettings = experiment.steps[current].settings;
+                setNavigator(navigatorSettings);
+                speed.current = navigatorSettings.speed;
+                rotationSpeed.current = navigatorSettings.rotationSpeed;
+                shouldReverse.current = navigatorSettings.shouldReverse;
+                canControl.current = navigatorSettings.canControl;
                 const currentSeed = useStore.getState().seed;
                 seed.current = currentSeed;
                 start();
+
+
             }
             
         });
@@ -77,7 +89,9 @@ export function Navigator() {
             // report current settings to state
             setNavigator({
                 speed: speed.current,
-                rotationSpeed: rotationSpeed.current
+                rotationSpeed: rotationSpeed.current,
+                shouldReverse: shouldReverse.current,
+                canControl: canControl.current
             })
     
           }, 1000 / timerSpeed); // report per second
@@ -93,6 +107,32 @@ export function Navigator() {
     const start = () => {
         init();
         animate();
+        setListeners();
+    }
+
+    const unsetListeners = () => {
+        document.removeEventListener('mousemove', onDocumentMouseMove);
+        document.removeEventListener('touchstart', onDocumentTouchStart);
+        document.removeEventListener('touchmove', onDocumentTouchMove);
+        window.removeEventListener('keypress', onKeyPress);
+        window.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+        document.removeEventListener('mozfullscreenchange', onFullscreenChange);
+        window.removeEventListener('resize', onWindowResize);     
+    }
+
+    const setListeners = () => {
+        // Setup listeners
+        if (canControl.current === true) {
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+            document.addEventListener('touchstart', onDocumentTouchStart, false);
+            document.addEventListener('touchmove', onDocumentTouchMove, false);
+            window.addEventListener('keypress', onKeyPress, false);
+            window.addEventListener('keydown', onKeyDown, false);
+        }  
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange, false);
+        document.addEventListener('mozfullscreenchange', onFullscreenChange, false);
+        window.addEventListener('resize', onWindowResize, false);     
     }
 
     const spriteSize = useRef(Math.ceil(3 * window.innerWidth / SCENE.SPRITE_SCALE_FACTOR));
@@ -209,14 +249,12 @@ export function Navigator() {
 
         spriteSize.current = Math.ceil(3 * renderTargetWidth / 1600);
 
-        const sprite1 = new TextureLoader().load('spiral-galaxy.svg');
+        const sprite1 = new TextureLoader().load(experiment.settings.textureSrc);
 
         camera.current = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCENE.SCALE_FACTOR);
         camera.current.position.set(0, 0, SCENE.SCALE_FACTOR / 2);
         
         const rng = prng_alea(seed.current);
-
-        // TODO: Remove flag (temporary)
 
         orbit = generateOrbit({ ...orbit }, ORBIT, SCENE, rng, experiment.settings.shouldJitter);
 
@@ -254,15 +292,7 @@ export function Navigator() {
 
         currentOrbit.current = orbit;
 
-        // Setup listeners
-        document.addEventListener('mousemove', onDocumentMouseMove, false);
-        document.addEventListener('touchstart', onDocumentTouchStart, false);
-        document.addEventListener('touchmove', onDocumentTouchMove, false);
-        document.addEventListener('webkitfullscreenchange', onFullscreenChange, false);
-        document.addEventListener('mozfullscreenchange', onFullscreenChange, false);
-        window.addEventListener('resize', onWindowResize, false);
-        window.addEventListener('keypress', onKeyPress, false);
-        window.addEventListener('keydown', onKeyDown, false);
+        
 
         setInterval(updateScene, 4000);
 
@@ -458,8 +488,14 @@ export function Navigator() {
                 if (camera.current.position.y < - SCENE.CAMERA_BOUND) camera.current.position.y = -SCENE.CAMERA_BOUND;
                 if (camera.current.position.y > SCENE.CAMERA_BOUND) camera.current.position.y = SCENE.CAMERA_BOUND;
             }
-            // look straight ahead
-            camera.current.lookAt(scene.current.position);
+
+            if (shouldReverse.current === true) {
+                camera.current.lookAt(0, 0, SCENE.SCALE_FACTOR);    
+            } else {
+                // look straight ahead
+                camera.current.lookAt(scene.current.position);    
+            }
+            
 
             renderer.current.render(scene.current, camera.current);
 

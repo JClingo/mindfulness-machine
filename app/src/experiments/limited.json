@@ -7,6 +7,7 @@
         "isVR": false,
         "startingSeed": 1149,
         "mousePixelThreshold": 300,
+        "textureSrc": "circle.svg",
         "SCENE": {
             "SPRITE_SCALE_FACTOR": 800,
             "SCALE_FACTOR": 1600,
@@ -16,7 +17,7 @@
             "NUM_LEVELS": 10,
             "LEVEL_DEPTH": 400,                        
             "DEF_BRIGHTNESS": 0.5,
-            "DEF_SATURATION": 0
+            "DEF_SATURATION": 0.5
         },
         "ORBIT": {
             "A_MIN": -30,
@@ -37,8 +38,10 @@
             "id": "training-intro",
             "type": "TRAINING",
             "settings": {
-                "speed": 1.0,
-                "rotationSpeed": -0.004
+                "speed": 0.5,
+                "rotationSpeed": 0,
+                "shouldReverse": true,
+                "canControl": false
             },
             "sequences": [
                 {
@@ -102,16 +105,20 @@
             "type": "NAVIGATOR",
             "duration": 36000,
             "settings": {
-                "speed": 2.0,
-                "rotationSpeed": -0.004
+                "speed": 0.5,
+                "rotationSpeed": 0,
+                "shouldReverse": true,
+                "canControl": false
             }
         },
         {
             "id": "outro",
             "type": "OUTRO",
             "settings": {
-                "speed": 1.0,
-                "rotationSpeed": -0.004
+                "speed": 0.5,
+                "rotationSpeed": 0,
+                "shouldReverse": true,
+                "canControl": false
             },
             "sequences": [
                 {
