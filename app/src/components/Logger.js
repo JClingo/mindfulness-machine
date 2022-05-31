@@ -15,6 +15,7 @@ export function Logger() {
     const interval = useRef(null);
     const [ms, setMs] = useState(0);
     const stepId = useRef(null);
+    const seed = useRef(useStore.getState().seed);
 
     useEffect(() => {
 
@@ -29,8 +30,15 @@ export function Logger() {
             }
         });
 
+        const seedSubscriber = useStore.subscribe(state => state.seed, (current, prev) => {
+            if (prev !== current) {
+                seed.current = current;
+            }
+        })
+
         return () => {
             stepIdxSubscriber();
+            seedSubscriber();
         }
 
     },[])
@@ -52,7 +60,9 @@ export function Logger() {
             speed: navigator.speed,
             rotationSpeed: navigator.rotationSpeed,
             x: normedX.current,
-            y: normedY.current
+            y: normedY.current,
+            seed: seed.current,
+            hueValues: navigator.hueValues
         }
 
         await setDoc(doc(db, "Experiments", experiment.id, "Participants", participantId.toString(), "Steps", stepId.current, "Timestep", ms.toString()), record);

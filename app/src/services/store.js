@@ -1,70 +1,54 @@
 import create from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import fullExperimentSrc from '../experiments/full.json';
-import limitedExperimentSrc from '../experiments/limited.json';
 import { STEP_TYPE, SEQUENCE_TYPE } from '../models/experiment';
 import { getNextStep, getNextSequence } from '../services/experiment';
 import { initializeApp } from 'firebase/app';
-// import 'firebase/firestore';
-import { getFirestore, serverTimestamp, collection, doc, addDoc, getDoc, getDocs, setDoc } from 'firebase/firestore/lite';
+import { getFirestore, serverTimestamp, doc, getDoc, setDoc } from 'firebase/firestore/lite';
 import firebaseConfig from '../settings/firebase-config';
-import { randomInt } from '../utilities/rng';
-import { async } from '@firebase/util';
 
 
 const useStore = create(subscribeWithSelector(((set,get) => {
 
-    const db = getFirestore(initializeApp(firebaseConfig));
-    const participantId = randomInt(1000000000, 1999999999);
 
-    const createLog = async (experimentSrc) => {        
+    const db = getFirestore(initializeApp(firebaseConfig));
+
+    const createLog = async (experiment, participantId) => {        
         
         const session = {
-            createdAt: serverTimestamp(),
-            experimentId: experimentSrc.id
+            createdAt: serverTimestamp()
         };
 
-        const experimentRef = await doc(db, "Experiments", experimentSrc.id);
-        const experimentSnap = await getDoc(experimentRef);
-        
-        if (experimentSnap.exists()) {
-            console.log(experimentSnap.data());
-            await setDoc(doc(experimentRef, "Participants", participantId.toString()), session);
-            console.log("Creating participant log...", session);
-
-            const conditionSnap = await getDoc(db, "Experiments", experimentSrc.id, "Condition");
-            if (!conditionSnap.exists()) { await setDoc(doc(experimentRef, "Condition", )) }
-
-         }          
-        
+        const experimentRef = await doc(db, "Experiments", experiment.id);
+        console.log("Creating participant log...", session);
+        await setDoc(doc(experimentRef, "Participants", participantId.toString()), session);
         
     }
 
     return {
-        initializeExperiment: async () => {
+        initializeExperiment: async (experiment, participantId) => {
          
-            let experimentSrc = null;
             const conditionRef = doc(db, "Settings", "Condition");
             const conditionSnap = await getDoc(conditionRef);
             const { id } = conditionSnap.data();
 
-            // TODO: Make more robust? -- right now it just alternates
-            if (id === "full") {
-                experimentSrc = fullExperimentSrc;
-                await setDoc(conditionRef, { id: "limited" });
-            } else {
-                experimentSrc = limitedExperimentSrc;
-                await setDoc(conditionRef, { id: "full" });
-            }
+            // // TODO: Make more robust? -- right now it just alternates
+            // if (id === "full") {
+            //     experimentSrc = fullExperimentSrc;
+            //     //await setDoc(conditionRef, { id: "limited" });
+            // } else {
+            //     experimentSrc = limitedExperimentSrc;
+            //     //await setDoc(conditionRef, { id: "full" });
+            // }
             
-            set({experiment: experimentSrc});
-            set({seed: experimentSrc.settings.startingSeed})
+            set({experiment: experiment});
+            set({participantId: participantId});
+            set({seed: experiment.settings.startingSeed})
             set({navigator: { speed: 0, rotationSpeed: 0, shouldReverse: false, canControl: false}})
-            await createLog(experimentSrc);
+            await createLog(experiment, participantId);
             set({initialized: true});
         },
         initialized: false,
-        participantId: participantId,
+        
         timerSpeed: 1, // set to change how fast/slow time passes
         activeId: null, // id of active step/sequence
         incrementSeed: () => { set(state => ({seed: state.seed + 1}))},

@@ -71,6 +71,7 @@ export function Navigator() {
                 }
  
                 const navigatorSettings = experiment.steps[current].settings;
+                navigatorSettings.hueValues = [];
                 setNavigator(navigatorSettings);
                 speed.current = navigatorSettings.speed;
                 rotationSpeed.current = navigatorSettings.rotationSpeed;
@@ -91,7 +92,8 @@ export function Navigator() {
                 speed: speed.current,
                 rotationSpeed: rotationSpeed.current,
                 shouldReverse: shouldReverse.current,
-                canControl: canControl.current
+                canControl: canControl.current,
+                hueValues: hueValues.current
             })
     
           }, 1000 / timerSpeed); // report per second
@@ -147,7 +149,7 @@ export function Navigator() {
     const controllerGrip1 = useRef(null);
     const controllerGrip2 = useRef(null);
 
-    let hueValues = [];
+    let hueValues = useRef([]);
     //let vrHMD, vrHMDSensor;
 
     let cursorX = 0, cursorY = 0;
@@ -260,7 +262,8 @@ export function Navigator() {
 
         const pointColor = new Color();
   
-        for (let s = 0; s < SCENE.NUM_SUBSETS; s++) { hueValues[s] = rng(); }
+        for (let s = 0; s < SCENE.NUM_SUBSETS; s++) { hueValues.current[s] = rng(); }
+
 
         // Create particle systems
         for (let k = 0; k < SCENE.NUM_LEVELS; k++) {
@@ -268,7 +271,7 @@ export function Navigator() {
                 const points = [];
                 for (let i = 0; i < SCENE.NUM_POINTS_SUBSET; i++) { points.push(orbit.subsets[s][i].vertex); }
                 let geometry = new BufferGeometry().setFromPoints(points);
-                pointColor.setHSL(hueValues[s], SCENE.DEF_SATURATION, SCENE.DEF_BRIGHTNESS);
+                pointColor.setHSL(hueValues.current[s], SCENE.DEF_SATURATION, SCENE.DEF_BRIGHTNESS);
                 let pointsMaterial = new PointsMaterial({
                     size: spriteSize.current,
                     map: sprite1,
@@ -308,7 +311,7 @@ export function Navigator() {
         let points = scene.current.children.filter(child => child.name === "particle-cloud");
 
         for (let s = 0; s < SCENE.NUM_SUBSETS; s++) {
-            hueValues[s] = rng();
+            hueValues.current[s] = rng();
         }
         for (let i = 0; i < points.length; i++) {
             points[i].needsUpdate = 1;
@@ -412,7 +415,7 @@ export function Navigator() {
                     // update the geometry and color
                     points[i].geometry.attributes.position.needsUpdate = true;
 
-                    points[i].myMaterial.color.setHSL(hueValues[points[i].mySubset], SCENE.DEF_SATURATION, SCENE.DEF_BRIGHTNESS);
+                    points[i].myMaterial.color.setHSL(hueValues.current[points[i].mySubset], SCENE.DEF_SATURATION, SCENE.DEF_BRIGHTNESS);
                     points[i].needsUpdate = 0;
 
                 }
@@ -490,7 +493,7 @@ export function Navigator() {
             }
 
             if (shouldReverse.current === true) {
-                camera.current.lookAt(0, 0, SCENE.SCALE_FACTOR);    
+                camera.current.lookAt(0, 0, SCENE.SCALE_FACTOR);
             } else {
                 // look straight ahead
                 camera.current.lookAt(scene.current.position);    
@@ -691,7 +694,7 @@ export function Navigator() {
         <div className="Navigator">
             <canvas ref={canvasEl}></canvas>
             {experiment.settings.isVR && <VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
-            {/* <Logger/> */}
+            <Logger/>
         </div>
     );
 }

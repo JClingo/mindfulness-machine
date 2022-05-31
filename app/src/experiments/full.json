@@ -33,6 +33,9 @@
         }
 
     },
+    "intro": {
+        "content": "Please enter your Prolific ID"
+    },
     "steps": [
         {
             "id": "training-intro",
