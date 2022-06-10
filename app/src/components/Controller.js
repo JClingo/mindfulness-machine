@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { INPUT_TYPE } from '../models/experiment';
+import { INPUT_TYPE, SEQUENCE_TYPE } from '../models/experiment';
 import { Navigator } from './Navigator';
 import { UI } from './UI';
 import { Timer } from './Timer';
@@ -48,21 +48,24 @@ export function Controller() {
         const sequenceIdx = useStore.getState().sequenceIdx;
         if (sequenceIdx > -1) {
             const stepIdx = useStore.getState().stepIdx;
-            const sequenceType = experiment.steps[stepIdx].sequences[sequenceIdx].type;
-            configureInput(sequenceType);  
+            const sequence = experiment.steps[stepIdx].sequences[sequenceIdx]
+            if (sequence.type === SEQUENCE_TYPE.INPUT) {
+                configureInput(sequence);
+            } 
+                
         }
 
     }
 
-    const configureInput = ({type}) => {
-        switch (type) {
+    const configureInput = ({input}) => {
+        switch (input) {
             case INPUT_TYPE.MOUSE:
                 mouseMovement.current = 0;
-                document.addEventListener('mousemove', onMouseMove, false);
+                document.addEventListener('mousemove', controllerOnMouseMove, false);
                 break;
             case INPUT_TYPE.ROTATION_SPEED:
             case INPUT_TYPE.SPEED:
-                window.addEventListener('keydown', onKeyDown, false);
+                window.addEventListener('keydown', controllerOnKeyDown, false);
                 break;
             default:
                 break;
@@ -70,27 +73,27 @@ export function Controller() {
     }
 
     // mouse move takes a certain amount of delta before it triggers the next state
-    const onMouseMove = (event) => {
+    const controllerOnMouseMove = (event) => {
         mouseMovement.current++;
         if (mouseMovement.current >= experiment.settings.mousePixelThreshold) {
-            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mousemove', controllerOnMouseMove);
             console.log('Mouse movement > 300 pixels');
             stateActions.increment();
         }
     }
 
     // TODO: Enrichen? Require more than a single valid input?
-    const onKeyDown = (event) => {
+    const controllerOnKeyDown = (event) => {
         let inputEntered = false;
         // hande up/down/left/right, wasd keys
-        if (event.keyCode === 38 || event.keyCode === 87 || // up / w
-        event.keyCode === 40 || event.keyCode === 83 || // down / s
-        event.keyCode === 37 || event.keyCode === 65 || // left / a
-        event.keyCode === 39 || event.keyCode === 68) // right / d
+        if (event.keyCode === 38 || // up / w
+        event.keyCode === 40 || // down / s
+        event.keyCode === 37 || // left / a
+        event.keyCode === 39 ) // right / d
             inputEntered = true;
             
         if (inputEntered) { // remove listener and move to the next state
-            window.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('keydown', controllerOnKeyDown);
             stateActions.increment();
         }
 

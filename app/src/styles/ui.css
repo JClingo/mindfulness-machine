@@ -1,7 +1,42 @@
 .ui {
-    display: absolute;
     z-index: 1000;
-    background-color: white;
-    top: 0;
-    left: 0;
+
 }
+
+.display {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-align: center;
+    line-height: 2em;
+}
+
+.controls {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    color:white;
+    padding: 1em;
+    grid-gap: 0.5em;
+}
+
+.key {
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 0.25rem 0.5rem;
+    text-align: center;
+}
+
+.key.active {
+    color: black;
+    border-color: black;
+    background: white;
+
+}
+
+

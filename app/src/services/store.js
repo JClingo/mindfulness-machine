@@ -11,6 +11,7 @@ const useStore = create(subscribeWithSelector(((set,get) => {
 
 
     const db = getFirestore(initializeApp(firebaseConfig));
+    if (!db) { console.error('Could not create firestore--check connection?'); }
 
     const createLog = async (experiment, participantId) => {        
         
@@ -20,18 +21,23 @@ const useStore = create(subscribeWithSelector(((set,get) => {
 
         const experimentRef = await doc(db, "Experiments", experiment.id);
         console.log("Creating participant log...", session);
-        await setDoc(doc(experimentRef, "Participants", participantId.toString()), session);
+        await setDoc(doc(experimentRef, "Participants", participantId.toString()), session).catch((e) => {
+            console.error('DB Error: Could not create record for participant', e)
+        });
         
     }
 
     return {
         initializeExperiment: async (experiment, participantId) => {
-         
-            const conditionRef = doc(db, "Settings", "Condition");
-            const conditionSnap = await getDoc(conditionRef);
-            const { id } = conditionSnap.data();
-
-            // // TODO: Make more robust? -- right now it just alternates
+            // let id;
+            // if (db) {
+            //     const conditionRef = doc(db, "Settings", "Condition");
+            //     const conditionSnap = await getDoc(conditionRef);
+            //     const { id } = conditionSnap.data();
+            // } else {
+            //     id = '-1';
+            // }
+                 
             // if (id === "full") {
             //     experimentSrc = fullExperimentSrc;
             //     //await setDoc(conditionRef, { id: "limited" });

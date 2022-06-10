@@ -18,6 +18,7 @@ import {
     Group,
     Quaternion
 } from "three";
+
 import { prng_alea } from 'esm-seedrandom';
 
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
@@ -40,8 +41,10 @@ export function Navigator() {
     const shouldReverse = useRef(initState.navigator.shouldReverse);
     const canControl = useRef(initState.navigator.canControl);
     const timerSpeed = useStore(state => state.timerSpeed);
+    const { SCENE, ORBIT, startingSeed } = experiment.settings;
 
-    const { SCENE, ORBIT } = experiment.settings;
+    const rng = useRef(prng_alea(startingSeed));
+
     const canvasEl = useRef(null);
     const interval = useRef(null);
 
@@ -87,6 +90,13 @@ export function Navigator() {
         });
 
         setInterval(() => {
+
+            if (experiment.settings.shouldVarySpeed) {
+                speed.current = rng.current() * 10;
+                console.log('current speed: ' + speed.current);
+            }
+
+
             // report current settings to state
             setNavigator({
                 speed: speed.current,
@@ -95,6 +105,8 @@ export function Navigator() {
                 canControl: canControl.current,
                 hueValues: hueValues.current
             })
+
+            
     
           }, 1000 / timerSpeed); // report per second
 
@@ -256,13 +268,13 @@ export function Navigator() {
         camera.current = new PerspectiveCamera(60, renderTargetWidth / renderTargetHeight, 1, 3 * SCENE.SCALE_FACTOR);
         camera.current.position.set(0, 0, SCENE.SCALE_FACTOR / 2);
         
-        const rng = prng_alea(seed.current);
+        
 
-        orbit = generateOrbit({ ...orbit }, ORBIT, SCENE, rng, experiment.settings.shouldJitter);
+        orbit = generateOrbit({ ...orbit }, ORBIT, SCENE, rng.current, experiment.settings.shouldJitter);
 
         const pointColor = new Color();
   
-        for (let s = 0; s < SCENE.NUM_SUBSETS; s++) { hueValues.current[s] = rng(); }
+        for (let s = 0; s < SCENE.NUM_SUBSETS; s++) { hueValues.current[s] = rng.current(); }
 
 
         // Create particle systems
@@ -306,18 +318,17 @@ export function Navigator() {
         incrementSeed();
         const currentSeed = useStore.getState().seed;
         seed.current = currentSeed;
-        const rng = prng_alea(seed.current);
 
         let points = scene.current.children.filter(child => child.name === "particle-cloud");
 
         for (let s = 0; s < SCENE.NUM_SUBSETS; s++) {
-            hueValues.current[s] = rng();
+            hueValues.current[s] = rng.current();
         }
         for (let i = 0; i < points.length; i++) {
             points[i].needsUpdate = 1;
         }
 
-        currentOrbit.current = generateOrbit({ ...currentOrbit.current }, ORBIT, SCENE, rng, experiment.settings.shouldJitter);
+        currentOrbit.current = generateOrbit({ ...currentOrbit.current }, ORBIT, SCENE, rng.current, experiment.settings.shouldJitter);
 
         const subsets = currentOrbit.current.subsets;
         const scale_factor_l = SCENE.SCALE_FACTOR;
@@ -642,21 +653,21 @@ export function Navigator() {
     }
 
     const onKeyDown = (event) => {
-        // hande up/down/left/right, wasd keys
-        if ((event.keyCode === 38 || event.keyCode === 87) && speed.current < 20) {
+        // hande up/down/left/right keys
+        if (event.keyCode === 38 && speed.current < 20) {
             speed.current += 0.5;
             return;
         }
-        if ((event.keyCode === 40 || event.keyCode === 83) && speed.current > 0.5) {
+        if (event.keyCode === 40 && speed.current > 0.5) {
             speed.current -= 0.5;
             return;
         };
-        if (event.keyCode === 37 || event.keyCode === 65) {
+        if (event.keyCode === 37) {
             if (rotationSpeed.current < 0.1) {
                 rotationSpeed.current += 0.001;
             }
             return;
-        } if (event.keyCode === 39 || event.keyCode === 68) { 
+        } if (event.keyCode === 39) { 
             if (rotationSpeed.current > -0.1) {
                 rotationSpeed.current -= 0.001; 
             }

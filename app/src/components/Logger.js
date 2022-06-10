@@ -65,7 +65,9 @@ export function Logger() {
             hueValues: navigator.hueValues
         }
 
-        await setDoc(doc(db, "Experiments", experiment.id, "Participants", participantId.toString(), "Steps", stepId.current, "Timestep", ms.toString()), record);
+        await setDoc(doc(db, "Experiments", experiment.id, "Participants", participantId.toString(), "Steps", stepId.current, "Timestep", ms.toString()), record).catch((e) => {
+            console.error('DB Error: Could not log participant state', e)
+        });
 
     }
 

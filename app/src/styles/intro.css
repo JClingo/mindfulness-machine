@@ -6,7 +6,43 @@
     right: 0;
     background-color: black;
     color: white;
+    padding: 2em;
+    overflow-y: auto;
+}
+
+.consent-form {
+    display: grid;
+    grid-gap: 1em;
+    align-content: center;
+    justify-content: center;
+}
+
+.content-form {
+    padding: 1em;
     display: grid;
     align-content: center;
     justify-content: center;
+    grid-gap: 2em;
+    height: 100%;
+}
+
+
+.content {
+    font-size: 1.5em;
+}
+
+.submitBtn {
+    position: initial !important;
+}
+
+.startBtn {
+    position: initial !important; 
+    justify-self: center; 
+
+}
+
+.opt-out {
+    font-size: 2em;
+    padding: 1em;
+    font-weight: 700;
 }
