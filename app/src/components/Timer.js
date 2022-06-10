@@ -5,7 +5,9 @@ export function Timer({reportCurrent, complete}) {
 
     const interval = useRef(null);
     const duration = useStore(state => state.timerDuration);
+    const setDuration = useStore(state => state.setTimerDuration)
     const timerSpeed = useStore(state => state.timerSpeed);
+
     const [ms, setMs] = useState(0);
 
     useEffect(() => {
@@ -17,14 +19,18 @@ export function Timer({reportCurrent, complete}) {
 
         return () => {
             activeIdSubscriber();
+            clearInterval(interval.current)
         }
 
     },[])
 
     useEffect(() => {
         reportCurrent(ms);
-        if (duration <= 0) return;
-        if (ms >= duration) complete();
+        if (duration < 0) return;
+        if (ms >= duration) {
+            setDuration(-1);
+            complete(); 
+        }
     }, [ms])
 
     const startTimer = () => interval.current = setInterval(() => {
@@ -33,7 +39,6 @@ export function Timer({reportCurrent, complete}) {
       }, 100 / timerSpeed); // once every 1/10 second, with optional offset for speeding the timer up
     
       const reset = () => setMs(0.0);
-      const stop = () => clearInterval(interval.current);
 
       return(<></>);
 

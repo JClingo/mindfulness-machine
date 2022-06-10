@@ -34,6 +34,7 @@ export function Navigator() {
     const initState = useStore.getState();
     const experiment = useStore(state => state.experiment);
     const seed = useRef(initState.seed);
+    const setSeed = useStore(state => state.setSeed);
     const incrementSeed = useStore(state => state.incrementSeed);
     const setNavigator = useStore(state => state.setNavigator);
     const speed = useRef(initState.navigator.speed);
@@ -72,7 +73,9 @@ export function Navigator() {
                 if (prev) {
                     unsetListeners(); // clear out past event listeners
                 }
- 
+
+                rng.current = prng_alea(startingSeed);
+                setSeed(startingSeed);
                 const navigatorSettings = experiment.steps[current].settings;
                 navigatorSettings.hueValues = [];
                 setNavigator(navigatorSettings);
@@ -83,8 +86,6 @@ export function Navigator() {
                 const currentSeed = useStore.getState().seed;
                 seed.current = currentSeed;
                 start();
-
-
             }
             
         });
@@ -96,7 +97,6 @@ export function Navigator() {
                 console.log('current speed: ' + speed.current);
             }
 
-
             // report current settings to state
             setNavigator({
                 speed: speed.current,
@@ -105,7 +105,6 @@ export function Navigator() {
                 canControl: canControl.current,
                 hueValues: hueValues.current
             })
-
             
     
           }, 1000 / timerSpeed); // report per second
@@ -677,27 +676,27 @@ export function Navigator() {
 
     const onKeyPress = (event) => {
         // handle 'f'
-        if (event.which === 70 || event.which === 102) {
-            //if (vrEnabled || isFullscreen) {
-            if (isFullscreen) {
-                exitFullscreen();
-                // } else if (vrSupported) {
-                //   if (canvasEl.current.mozRequestFullScreen) {
-                //     canvasEl.current.mozRequestFullScreen({
-                //       vrDisplay: vrHMD
-                //     });
-                //   } else if (canvasEl.current.webkitRequestFullscreen) {
-                //     canvasEl.current.webkitRequestFullscreen({
-                //       vrDisplay: vrHMD,
-                //     });
-                //   }
-            } else {
-                launchIntoFullscreen(canvasEl.current);
-            }
-            // } else if (vrEnabled && (event.which === 82 || event.which === 114)) {
-            //   // handle 'z'
-            //   vrHMDSensor.zeroSensor();
-        }
+        // if (event.which === 70 || event.which === 102) {
+        //     //if (vrEnabled || isFullscreen) {
+        //     if (isFullscreen) {
+        //         exitFullscreen();
+        //         // } else if (vrSupported) {
+        //         //   if (canvasEl.current.mozRequestFullScreen) {
+        //         //     canvasEl.current.mozRequestFullScreen({
+        //         //       vrDisplay: vrHMD
+        //         //     });
+        //         //   } else if (canvasEl.current.webkitRequestFullscreen) {
+        //         //     canvasEl.current.webkitRequestFullscreen({
+        //         //       vrDisplay: vrHMD,
+        //         //     });
+        //         //   }
+        //     } else {
+        //         launchIntoFullscreen(canvasEl.current);
+        //     }
+        //     // } else if (vrEnabled && (event.which === 82 || event.which === 114)) {
+        //     //   // handle 'z'
+        //     //   vrHMDSensor.zeroSensor();
+        // }
     }
     ///
 

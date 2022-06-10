@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { INPUT_TYPE, SEQUENCE_TYPE } from '../models/experiment';
 import { Navigator } from './Navigator';
+import { Questionnaire } from './Questionnaire';
 import { UI } from './UI';
 import { Timer } from './Timer';
 
@@ -11,6 +12,8 @@ export function Controller() {
 
     const experiment = useStore(state => state.experiment);
     const stateActions = useStore(state => state.stateActions);    
+    const completed = useStore(state => state.completed);
+    console.log('completed?', completed);
     const mouseMovement = useRef(0);
     
 
@@ -96,15 +99,16 @@ export function Controller() {
             window.removeEventListener('keydown', controllerOnKeyDown);
             stateActions.increment();
         }
-
     }
-
 
     return (
     <>
-        <Navigator />
-        <UI />
-        <Timer complete={onTimerComplete} reportCurrent={onTimerTic}/>
+        { !completed && <>
+            <Navigator />
+            <Timer complete={onTimerComplete} reportCurrent={onTimerTic}/>
+        </>}
+        { completed && <Questionnaire /> }
+        <UI /> 
     </>);
     
 }

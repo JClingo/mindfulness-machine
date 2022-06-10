@@ -54,9 +54,11 @@ const useStore = create(subscribeWithSelector(((set,get) => {
             set({initialized: true});
         },
         initialized: false,
-        
+        completed: false,
+        setCompleted: () => { set(() => ({completed: true}))},
         timerSpeed: 1, // set to change how fast/slow time passes
         activeId: null, // id of active step/sequence
+        setSeed: (seed) => { set(() => ({seed: seed})) },
         incrementSeed: () => { set(state => ({seed: state.seed + 1}))},
         navigator: {
             speed: 0, // initial navigator settings -- get set by each step
@@ -104,22 +106,10 @@ const initializeState = (state, set) => {
 const changeState = (state, set) => {
     const step = state.experiment.steps[state.stepIdx];
 
-    let newSequence = null;
     let newStep = null;
-
-    switch(step.type) {
-        case (STEP_TYPE.TRAINING):
-        case (STEP_TYPE.OUTRO):
-            newSequence = changeSequence(state, set);
-            if (!newSequence) {
-                newStep = changeStep(state, set);
-            }
-            break;
-        case (STEP_TYPE.NAVIGATOR):
-            newStep = changeStep(state, set);
-            break;
-        default: 
-           break; 
+    const newSequence = changeSequence(state, set);
+    if (!newSequence) {
+        newStep = changeStep(state, set);
     }
 
     if (newSequence) set(() => ({activeId: newSequence.id}));
@@ -127,6 +117,8 @@ const changeState = (state, set) => {
 
     if (!newSequence && !newStep) { 
         console.log('No more steps or sequences -- done with experiment');
+        state.setCompleted(true);
+        // TODO: Disable navigator and display survey
     } else {
         console.log('State changed');
     }
@@ -140,12 +132,10 @@ const changeStep = (state, set) => {
         state.setTimerDuration(nextStep.duration);
         set(state => ({navigator: {...state.navigator, speed: nextStep.settings.speed, rotationSpeed: nextStep.settings.rotationSpeed}}));
         console.log('Step changed: ' + nextStep.id);
+        set({sequenceIdx: 0});
         return nextStep;
-    };
-    if (!nextStep) { 
-        return null;
-    }
-    set({sequenceIdx: -1});
+    };   
+    return null;  
 }
 
 const changeSequence = (state, set) => {

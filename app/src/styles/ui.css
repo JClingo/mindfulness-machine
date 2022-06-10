@@ -13,6 +13,18 @@
     line-height: 2em;
 }
 
+.completed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    color: #8a0053;
+    background: white;
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+}
+
 .controls {
     position: absolute;
     bottom: 0;

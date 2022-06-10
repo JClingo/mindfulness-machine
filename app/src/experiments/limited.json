@@ -2,6 +2,7 @@
     "id": "limited",
     "description": "Browser-based pilot",
     "title": "Hopalong Orbits Pilot",
+    "surveyUrl": "https://ucmerced.az1.qualtrics.com/jfe/form/SV_eD5GOq47o1WqPhc",
     "settings": {
         "shouldJitter": true,
         "shouldVarySpeed": true,
@@ -114,17 +115,7 @@
         {
             "id": "navigator",
             "type": "NAVIGATOR",
-            "duration": 36000,
-            "settings": {
-                "speed": 0.5,
-                "rotationSpeed": 0,
-                "shouldReverse": true,
-                "canControl": false
-            }
-        },
-        {
-            "id": "outro",
-            "type": "OUTRO",
+            "duration": 5000,
             "settings": {
                 "speed": 0.5,
                 "rotationSpeed": 0,
@@ -133,19 +124,20 @@
             },
             "sequences": [
                 {
-                    "id": "outro-1",
-                    "display": "Thank you for your participation",
+                    "id": "navigator-1",
+                    "display": "",
                     "type": "TIMED",
-                    "duration": 3000
+                    "duration": 5000
                 },
                 {
-                    "id": "outro-2",
-                    "display": "You have completed the task<br/>When you're ready, copy the following code and enter it into the survey:",
-                    "type": "CODE"
-                }
-                
+                    "id": "navigator-2",
+                    "display": "Thank you for your participation.<br/>Next, take a few minutes to respond to a few questions.",
+                    "type": "TIMED",
+                    "duration": 5000
+                }    
             ]
         }
+        
 
 
 

@@ -1,8 +1,7 @@
 
 export const STEP_TYPE = {
     TRAINING: "TRAINING", // training step
-    NAVIGATOR: "NAVIGATOR", // main navigator step
-    OUTRO: "OUTRO" // outro step
+    NAVIGATOR: "NAVIGATOR" // main navigator step
 }
 
 export const SEQUENCE_TYPE = {

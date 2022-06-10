@@ -4,34 +4,31 @@ import { SEQUENCE_TYPE, INPUT_TYPE } from '../models/experiment';
 import useStore from '../services/store';
 import parse from 'html-react-parser';
 
-
 export function UI() {
 
     const experiment = useStore(state => state.experiment);
-    const steps = useStore(state => state.experiment).steps;
+    const completed = useStore(state => state.completed);
+    const participantId = useStore(state => state.participantId);
     const [display, setDisplay] = useState('');
     const [showControls, setShowControls] = useState(false);
     const [activeKeys, setActiveKeys] = useState({
-        37: false, 
-        38: false,
-        39: false,
-        40: false
+        37: false, // left
+        38: false, // up
+        39: false, // right
+        40: false  // down
     });
 
     useEffect(() => {
 
-        const activeIdSubscriber = useStore.subscribe(state => state.activeId, (current, prev) => { 
+        const activeIdSubscriber = useStore.subscribe(state => state.activeId, (current, prev) => {
             const sequenceIdx = useStore.getState().sequenceIdx;
-            if (sequenceIdx > -1) {
-                const stepIdx = useStore.getState().stepIdx;
-                const sequence = experiment.steps[stepIdx].sequences[sequenceIdx];
-                setDisplay(sequence.display);
-                return; 
-            }   
-            setDisplay('');      
+            const stepIdx = useStore.getState().stepIdx;
+            const sequence = experiment.steps[stepIdx].sequences[sequenceIdx];
+            setDisplay(sequence.display);
+            return;
         });
 
-        const stepIdxSubscriber = useStore.subscribe(state => state.stepIdx, (current, prev) => { 
+        const stepIdxSubscriber = useStore.subscribe(state => state.stepIdx, (current, prev) => {
             const { canControl } = experiment.steps[current].settings;
             setShowControls(canControl);
         });
@@ -49,37 +46,33 @@ export function UI() {
     }, [])
 
     const uiOnKeyUp = (event) => {
-
         activeKeys[event.keyCode] = false;
-        setActiveKeys({...activeKeys});
-        console.log('up', activeKeys);
-
+        setActiveKeys({ ...activeKeys });
     }
-
-   
 
     const uiOnKeyDown = (event) => {
-
         activeKeys[event.keyCode] = true;
-        setActiveKeys({...activeKeys});
-        console.log('down', activeKeys);
-
-        
+        setActiveKeys({ ...activeKeys });
     }
 
-
     return (<div className="ui">
-        <div className="display">{parse(display)}</div>
-        { showControls && <div className="controls">
-        <div></div>
-        <div className={`key ${activeKeys[38] ? 'active' : ''}`}>↑</div>
-        <div></div>
-        <div className={`key ${activeKeys[37] ? 'active' : ''}`}>←</div>
-        <div className={`key ${activeKeys[40] ? 'active' : ''}`}>↓</div>
-        <div className={`key ${activeKeys[39] ? 'active' : ''}`}>→</div>
+        {completed && <div className="completed">
+            {participantId}
         </div>}
+        {!completed && <>
+            <div className="display">{parse(display)}</div>
+            {showControls && <div className="controls">
+                <div></div>
+                <div className={`key ${activeKeys[38] ? 'active' : ''}`}>↑</div>
+                <div></div>
+                <div className={`key ${activeKeys[37] ? 'active' : ''}`}>←</div>
+                <div className={`key ${activeKeys[40] ? 'active' : ''}`}>↓</div>
+                <div className={`key ${activeKeys[39] ? 'active' : ''}`}>→</div>
+            </div>}
+        </>
+        }
     </div>);
-    
+
 }
 
 export default UI;
