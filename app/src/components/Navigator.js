@@ -93,8 +93,7 @@ export function Navigator() {
         setInterval(() => {
 
             if (experiment.settings.shouldVarySpeed) {
-                speed.current = rng.current() * 10;
-                console.log('current speed: ' + speed.current);
+                speed.current = rng.current() / 2;
             }
 
             // report current settings to state

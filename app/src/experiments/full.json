@@ -94,7 +94,7 @@
         {
             "id": "navigator",
             "type": "NAVIGATOR",
-            "duration": 5000,
+            "duration": 480000,
             "settings": {
                 "speed": 1,
                 "rotationSpeed": -0.004,
@@ -110,7 +110,7 @@
                 },
                 {
                     "id": "navigator-2",
-                    "display": "Thank you for your participation.<br/>Next, take a few minutes to respond to a some questions.",
+                    "display": "Thank you for your participation.<br/>Next, take a few minutes to respond to some questions.",
                     "type": "TIMED",
                     "duration": 10000
                 },
