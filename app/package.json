@@ -6,6 +6,7 @@
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
     "@hookform/resolvers": "^2.8.8",
+    "@mui/icons-material": "^5.8.3",
     "@mui/material": "^5.7.0",
     "esm-seedrandom": "^3.0.5",
     "firebase": "^9.7.0",

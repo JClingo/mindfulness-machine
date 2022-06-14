@@ -9,6 +9,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
+    font-size: 1.5em;
     text-align: center;
     line-height: 2em;
 }
@@ -16,13 +17,41 @@
 .completed {
     position: fixed;
     top: 0;
-    left: 0;
-    right: 0;
-    color: #8a0053;
+    width: 100%;
     background: white;
     text-align: center;
-    font-size: 2em;
     font-weight: bold;
+    display: grid;
+    justify-items: center;
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.completed-btn {
+    font-size: 2em;
+    color: #034892;
+    display: grid;
+    justify-items: center;
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: center;
+    grid-gap: 0.5em;
+    border: 1px solid #034892;
+    border-radius: 3px;
+    padding: 0 10px;
+    margin: 5px;
+    cursor: pointer;
+    background: transparent;
+    transition: background-color 250ms linear;
+    transition: border-color 250ms linear;
+    transition: color 250ms linear;
+}
+
+.completed-btn:hover {
+    background: #034892;
+    color: white;
+    border-color: #034892;
 }
 
 .controls {

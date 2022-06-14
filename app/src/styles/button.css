@@ -1,6 +1,6 @@
 button {
     cursor: pointer;
-    left: calc(50% - 50px);
+    /* left: calc(50% - 50px);
     width: 100px;
     opacity: 0.5;
     position: absolute;
@@ -12,7 +12,7 @@ button {
     color: #fff;
     text-align: center;
     outline: 'none';
-    z-index: 999;
+    z-index: 999; */
 }
 
 button:hover {

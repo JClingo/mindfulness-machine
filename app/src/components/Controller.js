@@ -11,30 +11,24 @@ import useStore from '../services/store';
 export function Controller() {
 
     const experiment = useStore(state => state.experiment);
-    const stateActions = useStore(state => state.stateActions);    
+    const stateActions = useStore(state => state.stateActions);
     const completed = useStore(state => state.completed);
-    console.log('completed?', completed);
     const mouseMovement = useRef(0);
-    
 
     useEffect(() => {
-        
+
         // start experiment
         stateActions.init();
 
-
-        const activeIdSubscriber = useStore.subscribe(state => state.activeId, (current, prev) => { 
-            if (current) activeChanged(current);          
+        const activeIdSubscriber = useStore.subscribe(state => state.activeId, (current, prev) => {
+            if (current) activeChanged(current);
         });
 
         return () => {
             activeIdSubscriber();
         }
-        
 
     }, [])
-
-    
 
     const onTimerComplete = () => {
         stateActions.increment();
@@ -45,22 +39,20 @@ export function Controller() {
     }
 
     const activeChanged = (id) => {
-        console.log('Active id changed: ' +  id);
+        console.log('Active id changed: ' + id);
 
-        // check we're on a sequence chain, meaning input is a possibility
-        const sequenceIdx = useStore.getState().sequenceIdx;
-        if (sequenceIdx > -1) {
-            const stepIdx = useStore.getState().stepIdx;
-            const sequence = experiment.steps[stepIdx].sequences[sequenceIdx]
-            if (sequence.type === SEQUENCE_TYPE.INPUT) {
-                configureInput(sequence);
-            } 
-                
+
+        const stepIdx = useStore.getState().stepIdx;
+        const sequence = experiment.steps[stepIdx].sequences[useStore.getState().sequenceIdx]
+        if (sequence.type === SEQUENCE_TYPE.INPUT) {
+            configureInput(sequence);
         }
+
+
 
     }
 
-    const configureInput = ({input}) => {
+    const configureInput = ({ input }) => {
         switch (input) {
             case INPUT_TYPE.MOUSE:
                 mouseMovement.current = 0;
@@ -88,29 +80,46 @@ export function Controller() {
     // TODO: Enrichen? Require more than a single valid input?
     const controllerOnKeyDown = (event) => {
         let inputEntered = false;
-        // hande up/down/left/right, wasd keys
-        if (event.keyCode === 38 || // up / w
-        event.keyCode === 40 || // down / s
-        event.keyCode === 37 || // left / a
-        event.keyCode === 39 ) // right / d
-            inputEntered = true;
-            
+
+        const stepIdx = useStore.getState().stepIdx;
+        const sequence = experiment.steps[stepIdx].sequences[useStore.getState().sequenceIdx];
+
+        switch (sequence.input) {
+            case INPUT_TYPE.ROTATION_SPEED:
+                if (
+                    event.keyCode === 37 || // left
+                    event.keyCode === 39) // right
+                    inputEntered = true;
+                break;
+
+            case INPUT_TYPE.SPEED:
+                if (event.keyCode === 38 || // up
+                    event.keyCode === 40) // down
+                    inputEntered = true;
+                break;
+            default:
+                break;
+        }
+
         if (inputEntered) { // remove listener and move to the next state
             window.removeEventListener('keydown', controllerOnKeyDown);
-            stateActions.increment();
+            setTimeout(() => {
+                stateActions.increment();
+            }, sequence.delay)
+
         }
     }
 
     return (
-    <>
-        { !completed && <>
-            <Navigator />
-            <Timer complete={onTimerComplete} reportCurrent={onTimerTic}/>
-        </>}
-        { completed && <Questionnaire /> }
-        <UI /> 
-    </>);
-    
+        <>
+            {!completed && <>
+                <Navigator />
+                <Timer complete={onTimerComplete} reportCurrent={onTimerTic} />
+            </>}
+            {completed && <Questionnaire />}
+            <UI />
+        </>);
+
 }
 
 export default Controller;

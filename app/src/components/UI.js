@@ -1,5 +1,7 @@
 import '../styles/ui.css';
 import { useEffect, useRef, useState } from 'react';
+
+import ContentCopy from '@mui/icons-material/ContentCopy';
 import { SEQUENCE_TYPE, INPUT_TYPE } from '../models/experiment';
 import useStore from '../services/store';
 import parse from 'html-react-parser';
@@ -17,6 +19,7 @@ export function UI() {
         39: false, // right
         40: false  // down
     });
+    const [isCopied, setIsCopied] = useState(false);
 
     useEffect(() => {
 
@@ -55,9 +58,34 @@ export function UI() {
         setActiveKeys({ ...activeKeys });
     }
 
+    async function copyTextToClipboard(text) {
+        if ('clipboard' in navigator) {
+          return await navigator.clipboard.writeText(text);
+        } else {
+          return document.execCommand('copy', true, text);
+        }
+      }
+
+    const handleCopyClick = () => {
+    // Asynchronously call copyTextToClipboard
+    copyTextToClipboard(participantId)
+        .then(() => {
+        // If successful, update the isCopied state value
+        setIsCopied(true);
+        setTimeout(() => {
+            setIsCopied(false);
+        }, 1500);
+        })
+        .catch((err) => {
+        console.log(err);
+        });
+    }
+
     return (<div className="ui">
         {completed && <div className="completed">
-            {participantId}
+
+      <button onClick={handleCopyClick} className="completed-btn"><div><span>ID:</span> <strong>{isCopied ? `${participantId} - copied to clipboard!` : `${participantId}`}</strong></div><ContentCopy /></button>
+            
         </div>}
         {!completed && <>
             <div className="display">{parse(display)}</div>

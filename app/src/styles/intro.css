@@ -32,11 +32,10 @@
 }
 
 .submitBtn {
-    position: initial !important;
+    justify-self: start;
 }
 
 .startBtn {
-    position: initial !important; 
     justify-self: center; 
 
 }

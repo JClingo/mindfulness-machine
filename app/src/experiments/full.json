@@ -58,51 +58,36 @@
                 },
                 {
                     "id": "training-intro-2",
-                    "display": "Please take a second to test the controls",
-                    "type": "TIMED",
-                    "duration": 3000
-                },
-                {
-                    "id": "training-intro-3",
-                    "display": "Use the <strong>up</strong> and <strong>down</strong> arrow keys to increase or decrease your speed",
+                    "display": "Please take a few seconds to get used to the controls",
                     "type": "TIMED",
                     "duration": 3000
                 },
                 {
                     "id": "training-intro-4",
-                    "display": "Use the <strong>up</strong> and <strong>down</strong> arrow keys to increase or decrease your speed<br/>Try it now",
+                    "display": "Use the <strong>up (↑)</strong> and <strong>down (↓)</strong> arrow keys to increase or decrease your speed",
                     "type": "INPUT",
-                    "input": "SPEED"
-                },
-                {
-                    "id": "training-intro-5",
-                    "display": "Use the <strong>left</strong> and <strong>right</strong> arrow keys to change the rotation direction and speed",
-                    "type": "TIMED",
-                    "duration": 3000
+                    "input": "SPEED",
+                    "delay": 3000
                 },
                 {
                     "id": "training-intro-6",
-                    "display": "Use the <strong>left</strong> and <strong>right</strong> arrow keys to change the rotation direction and speed<br/>Try it now",
+                    "display": "Use the <strong>left (←)</strong> and <strong>right (→)</strong> arrow keys to change the rotation ",
                     "type": "INPUT",
-                    "input": "ROTATION_SPEED"
-                },
-                {
-                    "id": "training-intro-7",
-                    "display": "Now, move your cursor around to control your trajectory",
-                    "type": "TIMED",
-                    "duration": 3000
+                    "input": "ROTATION_SPEED",
+                    "delay": 3000
                 },
                 {
                     "id": "training-intro-8",
-                    "display": "Now, move your cursor around to control your trajectory<br/>Try it now",
+                    "display": "Now, move your cursor around to control your trajectory<br/>",
                     "type": "INPUT",
-                    "input": "MOUSE"
+                    "input": "MOUSE",
+                    "delay": 3000
                 },
                 {
                     "id": "training-intro-9",
-                    "display": "Great! Now, relax and explore with these controls however you want<br>We'll let you know when you're done",
+                    "display": "Great! Relax and explore with these controls however you want<br>We'll let you know when you're done",
                     "type": "TIMED",
-                    "duration": 3000
+                    "duration": 5000
                 }
             ]
         },
@@ -125,9 +110,9 @@
                 },
                 {
                     "id": "navigator-2",
-                    "display": "Thank you for your participation.<br/>Next, take a few minutes to respond to a few questions.",
+                    "display": "Thank you for your participation.<br/>Next, take a few minutes to respond to a some questions.",
                     "type": "TIMED",
-                    "duration": 5000
+                    "duration": 10000
                 },
                 {
                     "id": "navigator-3",
