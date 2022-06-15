@@ -3,7 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { STEP_TYPE, SEQUENCE_TYPE } from '../models/experiment';
 import { getNextStep, getNextSequence } from '../services/experiment';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, serverTimestamp, doc, getDoc, setDoc } from 'firebase/firestore/lite';
+import { getFirestore, serverTimestamp, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore/lite';
 import firebaseConfig from '../settings/firebase-config';
 
 
@@ -45,7 +45,7 @@ const useStore = create(subscribeWithSelector(((set,get) => {
             //     experimentSrc = limitedExperimentSrc;
             //     //await setDoc(conditionRef, { id: "full" });
             // }
-            
+            set({db: db});
             set({experiment: experiment});
             set({participantId: participantId});
             set({seed: experiment.settings.startingSeed})
@@ -117,8 +117,7 @@ const changeState = (state, set) => {
 
     if (!newSequence && !newStep) { 
         console.log('No more steps or sequences -- done with experiment');
-        state.setCompleted(true);
-        // TODO: Disable navigator and display survey
+        completeExperiment(state);
     } else {
         console.log('State changed');
     }
@@ -160,6 +159,17 @@ const changeSequence = (state, set) => {
         console.log('No more sequences--trying next step');
         return null;
     };
+}
+
+const completeExperiment = async (state) => {
+    state.setCompleted(true);
+    const experimentRef = await doc(state.db, "Experiments", state.experiment.id);
+    const session = {
+        completedAt: serverTimestamp()
+    }
+    updateDoc(doc(experimentRef, "Participants", state.participantId.toString()), session).catch((e) => {
+        console.error('DB Error: Could not complete record for participant', e)
+    });
 }
 
   export default useStore;

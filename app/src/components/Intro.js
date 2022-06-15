@@ -6,9 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
 import parse from 'html-react-parser';
 import { randomInt } from '../utilities/rng';
-
-
-// TODO: Work out validation
+import { deviceType } from '../utilities/device-type';
 
 export function Intro({ settings, complete }) {
 
@@ -22,6 +20,8 @@ export function Intro({ settings, complete }) {
         resolver: yupResolver(schema)
     });
 
+    const [passedDeviceCheck, setPassedDeviceCheck] = useState(deviceType() === 'desktop');
+
     const [values, setValues] = useState({ consent: '' });
 
     const [optedIn, setOptedIn] = useState(null);
@@ -30,21 +30,9 @@ export function Intro({ settings, complete }) {
         setValues(value);
     };
 
-    // useEffect(() => {
-    //     const fetchExperiment = async () => {
-    //         const experiment = await import(`../experiments/${process.env.REACT_APP_EXPERIMENT}`);
-    //         setContent(experiment.intro.content);
-    //     }
-
-    //     fetchExperiment().catch(console.error);
-
-
-
-    // }, [])
-
     const onSubmit = () => {
         console.log(errors);
-        if (values.consent === 'true') { 
+        if (values.consent === 'true') {
             setOptedIn(true);
         };
         if (values.consent === 'false') setOptedIn(false);
@@ -56,46 +44,51 @@ export function Intro({ settings, complete }) {
     }
 
 
+
+
     return (
-        <div className="intro">
-            {optedIn === null && <form onSubmit={handleSubmit(onSubmit)} className="consent-form">
-                <div>{parse(settings?.consent)}</div>
-                <FormControl>
-                    <RadioGroup
-                        aria-labelledby="controlled-radio-buttons-group"
-                        name="controlled-radio-buttons-group"
-                        value={values.consent}
-                        onChange={(event) => handleChange({ ...values, consent: event.target.value })}
-                    >
-                        <FormControlLabel value="true" control={<Radio />} label="I consent to participate in this study" />
-                        <FormControlLabel value="false" control={<Radio />} label="I do not consent to participate in this study" />
-                    </RadioGroup>
-                </FormControl>
-                {/* <TextField
-                        autofill="false"
-                        placeholder="Prolific ID"
-                        name="id"
-                        label="Prolific ID"
-                        required
-                        {...register('id')}
-                        error={errors.id ? true : false}
-                        helperText={errors.id?.message}
-                        value={values.id}
-                        onChange={(event) => handleChange({ ...values, id: event.target.value })}
-                    /> */}
-                <Button variant="outlined" onClick={onSubmit} className="submitBtn" size="large">Submit</Button>
+        <div className="intro-container">
+            {passedDeviceCheck ?
+                <>
+                    <div className="screen">
+                        Please expand your browser window to fullscreen!
+                    </div>
+                    <div className="intro">
+                        {optedIn === null && <form onSubmit={handleSubmit(onSubmit)} className="consent-form">
+                            <div>{parse(settings?.consent)}</div>
+                            <FormControl>
+                                <RadioGroup
+                                    aria-labelledby="controlled-radio-buttons-group"
+                                    name="controlled-radio-buttons-group"
+                                    value={values.consent}
+                                    onChange={(event) => handleChange({ ...values, consent: event.target.value })}
+                                >
+                                    <FormControlLabel value="true" control={<Radio />} label="I consent to participate in this study" />
+                                    <FormControlLabel value="false" control={<Radio />} label="I do not consent to participate in this study" />
+                                </RadioGroup>
+                            </FormControl>
+                            <Button variant="outlined" onClick={onSubmit} className="submitBtn" size="large">Submit</Button>
+                        </form>}
+                        {optedIn === true && <div className="content-form">
+                            <div className="content">{settings?.content}</div>
+                            <Button variant="outlined" onClick={onComplete} className="startBtn" size="large">Start</Button>
+                        </div>}
+                        {optedIn === false &&
+                            <div className="opt-out">
+                                Thank you for your interest! You have decided not to participate in this study. (Go ahead and close this window)
+                            </div>
+                        }
+                    </div>
+
+                </>
+
+                : <div className="incorrect-device">
+                    This study can only run on devices with a keyboard and pointing device.<br />
+                    If you would still like to participate, please access the study on a <strong>desktop</strong> or <strong>laptop</strong>.
+                </div>}
 
 
-            </form>}
-            { optedIn === true && <div className="content-form">
-            <div className="content">{settings?.content}</div>
-            <Button variant="outlined" onClick={onComplete} className="startBtn" size="large">Start</Button>
-            </div> }
-            { optedIn === false &&
-                <div className="opt-out">
-                    Thank you for your interest! You have decided not to participate in this study. (Go ahead and close this window)
-                </div>
-            }
+
         </div>
 
 
