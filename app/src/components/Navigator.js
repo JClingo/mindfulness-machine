@@ -12,6 +12,7 @@ import {
     Points,
     PointsMaterial,
     AdditiveBlending,
+    NormalBlending,
     Float32BufferAttribute,
     LineBasicMaterial,
     Line,
@@ -178,7 +179,7 @@ export function Navigator() {
         let orbit = { ...currentOrbit.current };
 
         scene.current = new Scene();
-        scene.current.fog = new FogExp2(0x000000, 0.0012);
+        scene.current.fog = new FogExp2(0x000000, SCENE.FOG_DENSITY);
 
         // Initialize data points
         for (let i = 0; i < SCENE.NUM_SUBSETS; i++) {
@@ -285,7 +286,7 @@ export function Navigator() {
                 let pointsMaterial = new PointsMaterial({
                     size: spriteSize.current,
                     map: sprite1,
-                    blending: AdditiveBlending,
+                    blending: SCENE.SHOULD_ADDITIVE_BLEND ? AdditiveBlending : NormalBlending,
                     depthTest: false,
                     transparent: true,
                     color: pointColor

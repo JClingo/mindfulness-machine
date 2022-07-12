@@ -1,0 +1,116 @@
+{
+    "id": "full",
+    "description": "Browser-based pilot demo",
+    "title": "Hopalong Orbits Pilot - Demo",
+    "surveyUrl": "",
+    "settings": {
+        "shouldJitter": false,
+        "shouldVarySpeed": false,
+        "isVR": false,
+        "startingSeed": 1149,
+        "mousePixelThreshold": 300,
+        "textureSrc": "spiral-galaxy.svg",
+        "SCENE": {
+            "SPRITE_SCALE_FACTOR": 800,
+            "SCALE_FACTOR": 1600,
+            "CAMERA_BOUND": 200,
+            "FOG_DENSITY": 0.0012,
+            "SHOULD_ADDITIVE_BLEND": true,
+            "NUM_POINTS_SUBSET": 25000,
+            "NUM_SUBSETS": 7,                      
+            "NUM_LEVELS": 10,
+            "LEVEL_DEPTH": 400,                        
+            "DEF_BRIGHTNESS": 0.5,
+            "DEF_SATURATION": 1
+        },
+        "ORBIT": {
+            "A_MIN": -30,
+            "A_MAX": 30,
+            "B_MIN": 0.2,
+            "B_MAX": 1.8,
+            "C_MIN": 5,
+            "C_MAX": 17,
+            "D_MIN": 0,
+            "D_MAX": 10,
+            "E_MIN": 0,
+            "E_MAX": 12
+        }
+
+    },
+    "intro": {
+        "consent": "",
+        "content": "Maximize your browser window as much as possible"
+    },
+    "steps": [
+        {
+            "id": "training-intro",
+            "type": "TRAINING",
+            "settings": {
+                "speed": 0.5,
+                "rotationSpeed": -0.004,
+                "shouldReverse": false,
+                "canControl": true
+            },
+            "sequences": [
+                {
+                    "id": "training-intro-1",
+                    "display": "Welcome to the experience",
+                    "type": "TIMED",
+                    "duration": 3000
+                },
+                {
+                    "id": "training-intro-2",
+                    "display": "Please take a few seconds to get used to the controls",
+                    "type": "TIMED",
+                    "duration": 3000
+                },
+                {
+                    "id": "training-intro-3",
+                    "display": "Use the <strong>up (↑)</strong> and <strong>down (↓)</strong> arrow keys to increase or decrease your speed",
+                    "type": "INPUT",
+                    "input": "SPEED",
+                    "delay": 3000
+                },
+                {
+                    "id": "training-intro-4",
+                    "display": "Use the <strong>left (←)</strong> and <strong>right (→)</strong> arrow keys to change the rotation ",
+                    "type": "INPUT",
+                    "input": "ROTATION_SPEED",
+                    "delay": 3000
+                },
+                {
+                    "id": "training-intro-5",
+                    "display": "Now, move your cursor around to control your trajectory<br/>",
+                    "type": "INPUT",
+                    "input": "MOUSE",
+                    "delay": 3000
+                },
+                {
+                    "id": "training-intro-6",
+                    "display": "Great! Relax and explore with these controls however you want<br>We'll let you know when you're done",
+                    "type": "TIMED",
+                    "duration": 5000
+                }
+            ]
+        },
+        {
+            "id": "navigator",
+            "type": "NAVIGATOR",
+            "duration": 10000000,
+            "settings": {
+                "speed": 1,
+                "rotationSpeed": -0.004,
+                "shouldReverse": false,
+                "canControl": true
+            },
+            "sequences": [
+                {
+                    "id": "navigator-1",
+                    "display": "",
+                    "type": "TIMED",
+                    "duration": 1000000000
+                }
+            ]
+        }
+    ]
+}

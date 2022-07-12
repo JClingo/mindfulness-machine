@@ -1,23 +1,23 @@
 {
-    "id": "full",
-    "description": "Browser-based pilot",
-    "title": "Hopalong Orbits Pilot",
+    "id": "control",
+    "description": "Browser-based pilot - control condition",
+    "title": "Hopalong Orbits Pilot - Control",
     "surveyUrl": "https://ucmerced.az1.qualtrics.com/jfe/form/SV_eD5GOq47o1WqPhc",
     "settings": {
-        "shouldJitter": false,
-        "shouldVarySpeed": false,
+        "shouldJitter": true,
+        "shouldVarySpeed": true,
         "isVR": false,
         "startingSeed": 1149,
         "mousePixelThreshold": 300,
-        "textureSrc": "spiral-galaxy.svg",
+        "textureSrc": "square.svg",
         "SCENE": {
             "SPRITE_SCALE_FACTOR": 800,
             "SCALE_FACTOR": 1600,
             "CAMERA_BOUND": 200,
-            "FOG_DENSITY": 0.0012,
-            "SHOULD_ADDITIVE_BLEND": true,
+            "FOG_DENSITY": 0.01,
+            "SHOULD_ADDITIVE_BLEND": false,
             "NUM_POINTS_SUBSET": 25000,
-            "NUM_SUBSETS": 7,                      
+            "NUM_SUBSETS": 7,                   
             "NUM_LEVELS": 10,
             "LEVEL_DEPTH": 400,                        
             "DEF_BRIGHTNESS": 0.5,
@@ -39,7 +39,7 @@
     },
     "intro": {
         "consent": "<div><div><span style='font-weight: bolder;'><span style='font-size: 16px;'>Informed Consent&nbsp;</span></span></div><div>&nbsp;</div><div><span style='font-size: 16px;'><span style='font-weight: bolder;'>Title</span>: A Study on Experience</span></div><div>&nbsp;</div><div><span style='font-size:16px;'>IRB#:&nbsp;UCM2022-6</span></div><div>&nbsp;</div><div><span style='font-size: 16px;'><span style='font-weight: bolder;'>Purpose</span>: This research project will explore visual experience<br><br><span style='font-weight: bolder;'>Procedures</span>: You will participate in a visual task. You will also answer questions about your background and experiences. This will take about 15 minutes to complete.<br><br><span style='font-weight: bolder;'>Benefits</span>: There are no direct benefits to you as a participant.<br><br><span style='font-weight: bolder;'>Risks and/or Discomforts</span>: There is a remote possibility of dizziness associated with the visual. <strong>Please opt out if</strong> you have a history of dizziness/epilepsy. You are free to close the window at any time if you feel unwell for any reason. Adverse symptoms you encounter should be closely monitored. If these are severe and/or persistent, seek immediate medical attention.<br><br><span style='font-weight: bolder;'>Confidentiality</span>: The data you provide during the study will be kept strictly confidential. While results of this study may be presented at professional conferences or published in scientific journals, no individuals will be identified in any subsequent report, publication, or other use of the data obtained in this experiment.<br><br><span style='font-weight: bolder;'>Compensation</span>: You will receive $2.50 for participation.&nbsp;</span></div><div>&nbsp;</div><div><span style='font-size: 16px;'><span style='font-weight: bolder;'>Opportunity to Ask Questions</span>: You may ask any questions concerning this research and have those questions answered before agreeing to participate in the study by contacting the investigator at the email below. Please contact the University of California, Merced Institutional Review Board chair, Rose Scott, at (209) 228-4362 or irbchair@ucmerced.edu to voice concerns about the research or if you have any questions about your rights as a research participant. You may also contact the Office of Research Integrity at (209) 228-4613.<br><br><span style='font-weight: bolder;'>Freedom to Withdraw</span>: Participation in this study is voluntary. You can refuse to participate or withdraw at any time without harming your relationship with the researchers or the University of California, Merced, or in any other way receive a penalty or loss of benefits to which you are otherwise entitled.<br><br><span style='font-weight: bolder;'>Consent</span>: You are voluntarily making a decision whether or not to participate in this research study. Your participation certifies that you have decided to participate having read and understood the information presented and are at least 18 years of age.<br><br><span style='font-weight: bolder;'>Name and email of investigator(s): </span>Joshua Clingo, PhD student of Cognitive Science; Email: jclingo@ucmerced.edu | Jeffrey Yoshimi, Associate Professor of Cognitive Science; Email:&nbsp;jyoshimi@ucmerced.edu</span></div></div><div>&nbsp;</div><div><hr></div><div>&nbsp;</div>Would you like to participate in this study?",
-        "content": "This study explores experience and information. Please do not begin until you are in a quiet, undistracted environment. Access the study on a large display, with access to keyboard arrow keys and a mouse/trackpad. Maximize your browser window as much as possible. The entire study should take about 15 minutes."
+        "content": "This study explores experience and information. Please do not begin until you are in a quiet, undistracted environment. Access the study on a large display. Maximize your browser window as much as possible. The entire study should take about 15 minutes."
     },
     "steps": [
         {
@@ -47,9 +47,9 @@
             "type": "TRAINING",
             "settings": {
                 "speed": 0.5,
-                "rotationSpeed": -0.004,
-                "shouldReverse": false,
-                "canControl": true
+                "rotationSpeed": 0,
+                "shouldReverse": true,
+                "canControl": false
             },
             "sequences": [
                 {
@@ -58,36 +58,10 @@
                     "type": "TIMED",
                     "duration": 3000
                 },
+                
                 {
-                    "id": "training-intro-2",
-                    "display": "Please take a few seconds to get used to the controls",
-                    "type": "TIMED",
-                    "duration": 3000
-                },
-                {
-                    "id": "training-intro-3",
-                    "display": "Use the <strong>up (↑)</strong> and <strong>down (↓)</strong> arrow keys to increase or decrease your speed",
-                    "type": "INPUT",
-                    "input": "SPEED",
-                    "delay": 3000
-                },
-                {
-                    "id": "training-intro-4",
-                    "display": "Use the <strong>left (←)</strong> and <strong>right (→)</strong> arrow keys to change the rotation ",
-                    "type": "INPUT",
-                    "input": "ROTATION_SPEED",
-                    "delay": 3000
-                },
-                {
-                    "id": "training-intro-5",
-                    "display": "Now, move your cursor around to control your trajectory<br/>",
-                    "type": "INPUT",
-                    "input": "MOUSE",
-                    "delay": 3000
-                },
-                {
-                    "id": "training-intro-6",
-                    "display": "Great! Relax and explore with these controls however you want<br>We'll let you know when you're done",
+                    "id": "training-intro-9",
+                    "display": "Relax and watch the screen<br>We'll let you know when you're done",
                     "type": "TIMED",
                     "duration": 5000
                 }
@@ -96,19 +70,19 @@
         {
             "id": "navigator",
             "type": "NAVIGATOR",
-            "duration": 5000,
+            "duration": 480000,
             "settings": {
-                "speed": 1,
-                "rotationSpeed": -0.004,
-                "shouldReverse": false,
-                "canControl": true
+                "speed": 0.5,
+                "rotationSpeed": 0,
+                "shouldReverse": true,
+                "canControl": false
             },
             "sequences": [
                 {
                     "id": "navigator-1",
                     "display": "",
                     "type": "TIMED",
-                    "duration": 480000
+                    "duration": 5000
                 },
                 {
                     "id": "navigator-2",
@@ -121,7 +95,7 @@
                     "display": "",
                     "type": "TIMED",
                     "duration": 0
-                } 
+                }     
             ]
         }
     ]
