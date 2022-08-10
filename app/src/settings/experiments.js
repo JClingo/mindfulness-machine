@@ -1,1 +1,1 @@
-const experiments = ["full", "limited"];
+const experiments = ["main", "control"];

@@ -38,12 +38,12 @@ const useStore = create(subscribeWithSelector(((set,get) => {
             //     id = '-1';
             // }
                  
-            // if (id === "full") {
-            //     experimentSrc = fullExperimentSrc;
+            // if (id === "main") {
+            //     experimentSrc = mainExperimentSrc;
             //     //await setDoc(conditionRef, { id: "limited" });
             // } else {
             //     experimentSrc = limitedExperimentSrc;
-            //     //await setDoc(conditionRef, { id: "full" });
+            //     //await setDoc(conditionRef, { id: "main" });
             // }
             set({db: db});
             set({experiment: experiment});

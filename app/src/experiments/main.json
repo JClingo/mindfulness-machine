@@ -1,8 +1,8 @@
 {
-    "id": "full",
-    "description": "Browser-based pilot demo",
-    "title": "Hopalong Orbits Pilot - Demo",
-    "surveyUrl": "",
+    "id": "main",
+    "description": "mm1",
+    "title": "mm1",
+    "surveyUrl": "https://ucmerced.az1.qualtrics.com/jfe/form/SV_eD5GOq47o1WqPhc",
     "settings": {
         "shouldJitter": false,
         "shouldVarySpeed": false,
@@ -38,8 +38,7 @@
 
     },
     "intro": {
-        "consent": "",
-        "content": "Maximize your browser window as much as possible"
+        "content": "This study explores experience and information. Please do not begin until you are in a quiet, undistracted environment. Access the study on a large display, with access to keyboard arrow keys and a mouse/trackpad. Maximize your browser window as much as possible. The entire study should take about 15 minutes."
     },
     "steps": [
         {
@@ -96,7 +95,7 @@
         {
             "id": "navigator",
             "type": "NAVIGATOR",
-            "duration": 10000000,
+            "duration": 5000,
             "settings": {
                 "speed": 1,
                 "rotationSpeed": -0.004,
@@ -108,8 +107,20 @@
                     "id": "navigator-1",
                     "display": "",
                     "type": "TIMED",
-                    "duration": 1000000000
-                }
+                    "duration": 480000
+                },
+                {
+                    "id": "navigator-2",
+                    "display": "Thank you for your participation.<br/>Next, take a few minutes to answer some questions",
+                    "type": "TIMED",
+                    "duration": 10000
+                },
+                {
+                    "id": "navigator-3",
+                    "display": "",
+                    "type": "TIMED",
+                    "duration": 0
+                } 
             ]
         }
     ]
