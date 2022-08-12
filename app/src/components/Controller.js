@@ -14,6 +14,8 @@ export function Controller() {
     const stateActions = useStore(state => state.stateActions);
     const completed = useStore(state => state.completed);
     const mouseMovement = useRef(0);
+    const [progressPercent, setProgressPercent] = useState(-1);
+    const progress = useRef(0);
 
     useEffect(() => {
 
@@ -70,9 +72,10 @@ export function Controller() {
     // mouse move takes a certain amount of delta before it triggers the next state
     const controllerOnMouseMove = (event) => {
         mouseMovement.current++;
+        setProgressPercent(parseInt(mouseMovement.current / experiment.settings.mousePixelThreshold * 100));
         if (mouseMovement.current >= experiment.settings.mousePixelThreshold) {
             document.removeEventListener('mousemove', controllerOnMouseMove);
-            console.log('Mouse movement > 300 pixels');
+            setProgressPercent(-1);
             stateActions.increment();
         }
     }
@@ -80,7 +83,7 @@ export function Controller() {
     // TODO: Enrichen? Require more than a single valid input?
     const controllerOnKeyDown = (event) => {
         let inputEntered = false;
-
+        
         const stepIdx = useStore.getState().stepIdx;
         const sequence = experiment.steps[stepIdx].sequences[useStore.getState().sequenceIdx];
 
@@ -89,13 +92,18 @@ export function Controller() {
                 if (
                     event.keyCode === 37 || // left
                     event.keyCode === 39) // right
-                    inputEntered = true;
+                    progress.current += 1;
+                    setProgressPercent(parseInt(progress.current / experiment.settings.arrowThreshold * 100)); 
+                    if (progress.current >= experiment.settings.arrowThreshold) inputEntered = true;
+                    
                 break;
 
             case INPUT_TYPE.SPEED:
                 if (event.keyCode === 38 || // up
                     event.keyCode === 40) // down
-                    inputEntered = true;
+                    progress.current += 1;
+                    setProgressPercent(parseInt(progress.current / experiment.settings.arrowThreshold * 100)); 
+                    if (progress.current >= experiment.settings.arrowThreshold) inputEntered = true;
                 break;
             default:
                 break;
@@ -104,6 +112,8 @@ export function Controller() {
         if (inputEntered) { // remove listener and move to the next state
             window.removeEventListener('keydown', controllerOnKeyDown);
             setTimeout(() => {
+                progress.current = 0;
+                setProgressPercent(-1);
                 stateActions.increment();
             }, sequence.delay)
 
@@ -117,7 +127,7 @@ export function Controller() {
                 <Timer complete={onTimerComplete} reportCurrent={onTimerTic} />
             </>}
             {completed && <Questionnaire />}
-            <UI />
+            <UI progress={progressPercent}/>
         </>);
 
 }

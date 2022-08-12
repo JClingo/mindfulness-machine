@@ -7,8 +7,9 @@
         "shouldJitter": true,
         "shouldVarySpeed": true,
         "isVR": false,
-        "startingSeed": 1149,
-        "mousePixelThreshold": 300,
+        "startingSeed": 1153,
+        "mousePixelThreshold": 1000,
+        "arrowThreshold": 50,
         "textureSrc": "circle.svg",
         "SCENE": {
             "SPRITE_SCALE_FACTOR": 800,
@@ -16,7 +17,7 @@
             "CAMERA_BOUND": 200,
             "FOG_DENSITY": 0.01,
             "SHOULD_ADDITIVE_BLEND": false,
-            "NUM_POINTS_SUBSET": 25000,
+            "NUM_POINTS_SUBSET": 20000,
             "NUM_SUBSETS": 7,                      
             "NUM_LEVELS": 10,
             "LEVEL_DEPTH": 400,                        
@@ -55,14 +56,14 @@
                     "id": "training-intro-1",
                     "display": "Welcome to the experience",
                     "type": "TIMED",
-                    "duration": 3000
+                    "duration": 4000
                 },
                 
                 {
                     "id": "training-intro-9",
-                    "display": "Relax and watch the screen<br>We'll let you know when you're done",
+                    "display": "Relax and focus on the screen<br>We'll let you know when you're done",
                     "type": "TIMED",
-                    "duration": 5000
+                    "duration": 10000
                 }
             ]
         },

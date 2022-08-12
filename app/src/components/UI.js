@@ -6,7 +6,7 @@ import { SEQUENCE_TYPE, INPUT_TYPE } from '../models/experiment';
 import useStore from '../services/store';
 import parse from 'html-react-parser';
 
-export function UI() {
+export function UI({progress = -1}) {
 
     const experiment = useStore(state => state.experiment);
     const completed = useStore(state => state.completed);
@@ -60,35 +60,34 @@ export function UI() {
 
     async function copyTextToClipboard(text) {
         if ('clipboard' in navigator) {
-          return await navigator.clipboard.writeText(text);
+            return await navigator.clipboard.writeText(text);
         } else {
-          return document.execCommand('copy', true, text);
+            return document.execCommand('copy', true, text);
         }
-      }
+    }
 
     const handleCopyClick = () => {
-    // Asynchronously call copyTextToClipboard
-    copyTextToClipboard(participantId)
-        .then(() => {
-        // If successful, update the isCopied state value
-        setIsCopied(true);
-        setTimeout(() => {
-            setIsCopied(false);
-        }, 1500);
-        })
-        .catch((err) => {
-        console.log(err);
-        });
+        // Asynchronously call copyTextToClipboard
+        copyTextToClipboard(participantId)
+            .then(() => {
+                // If successful, update the isCopied state value
+                setIsCopied(true);
+                setTimeout(() => {
+                    setIsCopied(false);
+                }, 1500);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
     }
 
     return (<div className="ui">
         {completed && <div className="completed">
-
-      <button onClick={handleCopyClick} className="completed-btn"><div><span>ID:</span> <strong>{isCopied ? `${participantId} - copied to clipboard!` : `${participantId}`}</strong></div><ContentCopy /></button>
-            
+            <button onClick={handleCopyClick} className="completed-btn"><div><span>ID:</span> <strong>{isCopied ? `${participantId} - copied to clipboard!` : `${participantId}`}</strong></div><ContentCopy /></button>
         </div>}
         {!completed && <>
             <div className="display">{parse(display)}</div>
+            { progress >= 0 && <div className="progress">{progress}%</div> }
             {showControls && <div className="controls">
                 <div></div>
                 <div className={`key ${activeKeys[38] ? 'active' : ''}`}>↑</div>

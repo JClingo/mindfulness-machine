@@ -1,5 +1,5 @@
 {
-    "id": "full",
+    "id": "main",
     "description": "Browser-based pilot demo",
     "title": "Hopalong Orbits Pilot - Demo",
     "surveyUrl": "",
@@ -7,16 +7,17 @@
         "shouldJitter": false,
         "shouldVarySpeed": false,
         "isVR": false,
-        "startingSeed": 1149,
-        "mousePixelThreshold": 300,
+        "startingSeed": 1153,
+        "mousePixelThreshold": 1000,
+        "arrowThreshold": 50,
         "textureSrc": "spiral-galaxy.svg",
         "SCENE": {
             "SPRITE_SCALE_FACTOR": 800,
             "SCALE_FACTOR": 1600,
             "CAMERA_BOUND": 200,
-            "FOG_DENSITY": 0.0012,
+            "FOG_DENSITY": 0.0015,
             "SHOULD_ADDITIVE_BLEND": true,
-            "NUM_POINTS_SUBSET": 25000,
+            "NUM_POINTS_SUBSET": 20000,
             "NUM_SUBSETS": 7,                      
             "NUM_LEVELS": 10,
             "LEVEL_DEPTH": 400,                        
@@ -68,21 +69,21 @@
                     "display": "Use the <strong>up (↑)</strong> and <strong>down (↓)</strong> arrow keys to increase or decrease your speed",
                     "type": "INPUT",
                     "input": "SPEED",
-                    "delay": 3000
+                    "delay": 1500
                 },
                 {
                     "id": "training-intro-4",
                     "display": "Use the <strong>left (←)</strong> and <strong>right (→)</strong> arrow keys to change the rotation ",
                     "type": "INPUT",
                     "input": "ROTATION_SPEED",
-                    "delay": 3000
+                    "delay": 1500
                 },
                 {
                     "id": "training-intro-5",
                     "display": "Now, move your cursor around to control your trajectory<br/>",
                     "type": "INPUT",
                     "input": "MOUSE",
-                    "delay": 3000
+                    "delay": 1500
                 },
                 {
                     "id": "training-intro-6",

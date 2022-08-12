@@ -8,7 +8,8 @@
         "shouldVarySpeed": true,
         "isVR": false,
         "startingSeed": 1149,
-        "mousePixelThreshold": 300,
+        "mousePixelThreshold": 1000,
+        "arrowThreshold": 50,
         "textureSrc": "square.svg",
         "SCENE": {
             "SPRITE_SCALE_FACTOR": 800,
