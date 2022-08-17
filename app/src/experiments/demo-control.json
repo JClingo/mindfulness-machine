@@ -7,22 +7,22 @@
         "shouldJitter": true,
         "shouldVarySpeed": true,
         "isVR": false,
-        "startingSeed": 1149,
+        "startingSeed": 1153,
         "mousePixelThreshold": 1000,
         "arrowThreshold": 50,
-        "textureSrc": "square.svg",
+        "textureSrc": "circle.svg",
         "SCENE": {
             "SPRITE_SCALE_FACTOR": 800,
             "SCALE_FACTOR": 1600,
             "CAMERA_BOUND": 200,
             "FOG_DENSITY": 0.01,
             "SHOULD_ADDITIVE_BLEND": false,
-            "NUM_POINTS_SUBSET": 25000,
+            "NUM_POINTS_SUBSET": 20000,
             "NUM_SUBSETS": 7,                   
             "NUM_LEVELS": 10,
             "LEVEL_DEPTH": 400,                        
             "DEF_BRIGHTNESS": 0.5,
-            "DEF_SATURATION": 1
+            "DEF_SATURATION": 0.5
         },
         "ORBIT": {
             "A_MIN": -30,
