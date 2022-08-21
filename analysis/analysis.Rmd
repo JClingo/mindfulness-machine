@@ -1,0 +1,526 @@
+---
+title: "First-year analysis"
+author: "Joshua Clingo"
+date: "5/27/2021"
+output:
+  html_document: default
+  pdf_document: default
+bibliography: bibliography.json
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo=TRUE)
+```
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lme4)
+library(car)
+library(lsr)
+library(corrplot)
+library(ggeffects)
+library(brms)
+options(mc.cores = parallel::detectCores())
+theme_set(theme_classic()) 
+set.seed(123)
+
+```
+
+
+
+
+
+```{r echo=FALSE}
+
+# read in data
+
+df = readRDS("../../data/conjunction-teacher.rds")
+
+df_believer = df %>% 
+  filter(IsBelieverCondition == 1)
+df_nonbeliever = df %>% 
+  filter(IsBelieverCondition == 0)
+
+```
+
+```{r}
+dftest = df_believer %>% 
+  filter(as.numeric(as.character(IsCorrect)) == 0)
+```
+
+
+```{r}
+
+p = df %>%
+  mutate (Correct = if_else(as.numeric(as.character(IsCorrect)) == 1, "True", "False")) %>% 
+  ggplot() + 
+  geom_bar(aes(x=Correct, fill=factor(Correct))) + 
+  facet_wrap(~IsBelieverCondition, labeller = as_labeller(c("0" = "Group A", "1" = "Group B" ))) +
+  scale_fill_manual(values = c("False" = "#f44336",
+                               "True" = "#4CAF50")) +
+  labs(x = "", 
+       y = "Count", 
+       title="Correct vs Incorrect response", 
+       subtitle = "(correct if chose 'This woman is a teacher')") + 
+  theme(legend.position = "none")
+
+```
+
+```{r}
+ggsave(p, file="Correct vs Incorrect.png", width=4, height=4)
+```
+
+
+
+```{r}
+
+df %>% 
+  mutate(IsBeliever = if_else(ReligiousScale >= 50, 1, 0)) %>% 
+  ggplot() + 
+  geom_bar(aes(x=IsCorrect, fill=factor(IsBeliever))) + 
+  ggtitle(label = "MEQ Score vs Religiosity across both conditions",
+          subtitle = "(Inc. whether they got the answer right or not)") +
+  facet_wrap(~IsBelieverCondition, labeller = as_labeller(c("0" = "Non-believer Condition", "1" = "Believer Condition" )))
+
+
+```
+
+```{r}
+glm =  glm(IsCorrect ~ IsBelieverCondition, data=df, family = binomial(link = "logit"))
+summary(glm)
+```
+
+```{r}
+# Simple Generalized Linear Mixed-Effects Model
+gmm <- glmer(data = df, 
+              family = binomial(link = "logit"), 
+              IsCorrect ~ 1 + 
+              IsBelieverCondition + 
+              (IsBelieverCondition|ReligiousScale))
+```
+
+```{r echo=FALSE}
+summary(gmm)
+```
+
+```{r}
+# Simple Generalized Linear Mixed-Effects Model
+gmm <- glmer(data = df, 
+              family = binomial(link = "logit"), 
+              IsCorrect ~ 1 + 
+              IsBelieverCondition + 
+              (IsBelieverCondition|ReligiousScale))
+```
+
+```{r echo=FALSE}
+summary(gmm)
+```
+
+```{r}
+cor(df$ReligiousScale, df$MEQ_Score)
+```
+
+```{r echo=FALSE}
+
+levels(df$IsCorrect) <- list("False" = "0",        # Change factor levels
+                               "True" = "1")
+
+p2 = df %>% 
+  ggplot(aes(x=ReligiousScale, y=MEQ_Score)) + 
+  geom_point(aes(color=factor(IsCorrect)), alpha=0.8) + 
+  ggtitle(label = "MEQ Score vs Religiosity across both conditions", 
+          subtitle = "Each point represents a single participant") +
+  labs(x = "Self-reported belief in God/gods (0-100)", 
+       y = "MEQ Score") +
+  scale_colour_manual(name = "Got the right answer", values = c("#f44336", "#4CAF50")) +
+  geom_line(stat="smooth",method = "lm", formula = y~x,
+              size = 1,
+              alpha = 0.2) +
+  facet_wrap(~IsBelieverCondition, labeller = as_labeller(c("0" = "Group A", "1" = "'Group B" )))
+
+```
+
+
+```{r}
+ggsave(p2, file="MEQ vs Religiosity.png", width=8, height=4)
+```
+
+```{r echo=FALSE, out.width="50%"}
+df_correlations = df %>% 
+  select(IsCorrect, IsBelieverCondition, MEQ_Score, ReligiousScale, `Duration (in seconds)`, IsFemale, Education, Psychedelic)
+df_correlations[] <- lapply(df_correlations,as.integer)
+res1 <- cor.mtest(df_correlations, conf.level = .95)
+## specialized the insignificant value according to the significant level
+corrplot(cor(df_correlations), p.mat = res1$p, insig = "label_sig",
+         sig.level = c(.001, .01, .05), pch.cex = .9, pch.col = "white")
+```
+
+Here we get a strongly significant correlation between getting the belief condition and the likelihood of the respondent getting the correct answer (non-conjunct). This is unsurprising to our hypotheses. We expected the error rate to be far higher in the belief condition. We also see that MEQ_Score and ReligiousScale (self-rated belief in the existence of God or gods) are connected. And most intriguingly for our hypotheses, we see that there's a strong-to-modestly significant (p < 0.001; p < 0.01) effect of both MEQ Score and ReligiousScale, leading us to suspect that the most religious *and/or* mystical are especially susceptible to the conjunction effect here.
+
+The next step was to pull our datasets apart to see whether these results hold when treating the response groups independently.
+
+*** 
+
+### Believer condition correlation matrix (95% conf. interval)
+
+\**** = 0.001 significance
+** = 0.01 significance
+* = 0.05 significance
+
+```{r echo=FALSE ,out.width="50%"}
+df_correlations = df_believer %>% 
+  select(IsCorrect, MEQ_Score, ReligiousScale, `Duration (in seconds)`, IsFemale, Education, Psychedelic)
+df_correlations[] <- lapply(df_correlations,as.integer)
+res1 <- cor.mtest(df_correlations, conf.level = .95)
+## specialized the insignificant value according to the significant level
+corrplot(cor(df_correlations), p.mat = res1$p, insig = "label_sig",
+         sig.level = c(.001, .01, .05), pch.cex = .9, pch.col = "white")
+```
+
+In the believer condition, we get a very interesting result--A strong (p < 0.001) negative correlation between belief in God(/MEQ Score) and the probability that
+they got the right answer. It certainly looks like a classic conjunction effect (implicit association between eudaemonia and belief) from this level.
+
+The real test will be the non-believer condition. Are religious people less likely to commit the error like we thought? 
+
+***
+
+### Non-believer condition correlation matrix (95% conf. interval)
+
+\**** = 0.001 significance
+** = 0.01 significance
+* = 0.05 significance
+
+```{r echo=FALSE, out.width="50%"}
+df_correlations = df_nonbeliever %>% 
+  select(IsCorrect, MEQ_Score, ReligiousScale, `Duration (in seconds)`, IsFemale, Education, Psychedelic)
+df_correlations[] <- lapply(df_correlations,as.integer)
+res1 <- cor.mtest(df_correlations, conf.level = .95)
+## specialized the insignificant value according to the significant level
+corrplot(cor(df_correlations), p.mat = res1$p, insig = "label_sig",
+         sig.level = c(.001, .01, .05), pch.cex = .9, pch.col = "white")
+```
+
+No--we get just a weak effect here between MEQ Score and whether they got the 
+correct answer. This is slightly surprising but our surprise goes down when we see
+the actual numbers we're dealing with.
+
+
+
+
+This plot has several things going on but should be intuitive with guidance. We've split the data into two charts,
+with the believer condition on the right and the non-believer condition on the left. Their self-reported belief in God/gods is the x-axis
+and their combined MEQ score is the y-axis. The red line shows the linear fit between those axes in either condition (as expected).
+Then we have two colors of circles, each of which represents a respondent. If the circle is cyan, they got the answer right (chose the non-conjunct). If the circle is light red, they chose the conjunct. 
+
+You can probably notice that in the religious condition on the right, there's a clustering of wrong answers up to right (higher belief in God), though the wrong answers appear on either end of the MEQ. On the non-religious condition, you'll notice the clustering of wrong answers up and to the right. You'll also notice there are far fewer wrong answers. Conveniently, this is what we predicted. Less conveniently, this means we don't have that many wrong answers in the non-religious condition and therefore are hard-pressed to have any confidence about other predictors (like belief in God/gods). 
+
+```{r echo=FALSE, out.width="50%"}
+df %>% 
+  ggplot()+
+  ggtitle(label = "Accuracy by condition")+
+  stat_summary(aes(x = IsCorrect, y = ReligiousScale, group = IsBelieverCondition), geom = "point", alpha = 0.5)+
+  stat_summary(aes(x = IsCorrect, y = ReligiousScale, group = IsBelieverCondition), geom = "line", alpha = 0.5)+
+  stat_summary(aes(x = IsCorrect, y = ReligiousScale), geom = "pointrange", color = "red") +
+  facet_wrap(~IsBelieverCondition, labeller = as_labeller(c("0" = "Group A", "1" = "Group B" ))) +
+    labs(y = "Self-reported belief in God/gods (0-100)", 
+       x = "",
+       subtitle = "(correct if chose 'This woman is a teacher')")
+
+```
+
+We see the same idea here, where our error bars are just too big in the non-believer condition. 
+However, this is still good for our hypotheses overall. We were expecting the believer condition
+to have a big gap in the middle of believers and nonbelievers and for the direction to be that way. We
+were also expecting the gap to narrow or disappear in the non-believer condition.
+
+Now that we've visualized our main results, let's do a bit of modeling. 
+
+## Modeling
+
+### First we take the combined results and treat the condition as a random effect
+
+```{r}
+# Simple Generalized Linear Mixed-Effects Model
+gmm <- glmer(data = df, 
+              family = binomial(link = "logit"), 
+              IsCorrect ~ 1 + 
+              ReligiousScale +
+              MEQ_Score +
+              (1|Race) +
+              (1|IsBelieverCondition) +
+              (1|IsFemale) + 
+              (1|Age))
+```
+
+```{r echo=FALSE}
+summary(gmm)
+```
+
+Given our model, these are our predictions for the two main predictors of respondents getting the correct answer
+
+```{r echo=FALSE, out.width="50%"}
+pred_religious <- ggpredict(gmm, "ReligiousScale")
+plot(pred_religious)
+```
+
+```{r echo=FALSE, out.width="50%"}
+pred_meq <- ggpredict(gmm, "MEQ_Score")
+plot(pred_meq)
+```
+As you can see, the confidence intervals are rather wide but the trend is quite clear and strong. 
+More belief and/or mystical feeling leads to a higher predicted error rate. (We break this down by condition in the Appendix)
+
+### Results discussion
+
+## Hypotheses
+* (check) We expected those in the believer condition to commit the conjunction error at 
+a much higher rate than those in the non-believer condition, regardless of personal believe in God/gods
+* ~ We expected believer people in the non-believer condition to commit the error slightly less than those who self-rated low belief in God/gods
+* (check) We expected MEQ scores to correlate somewhat strongly with belief in God/gods
+
+
+- Right, so our predictions were more or less correct!
+- Only hangup here was our low power when it came to predicting religiosity under the non-belief condition
+
+This is just the first of a series of follow-ups where we're going to be looking into
+ways to better validate whether we're really getting at eudaemonia (instead of unintentionally retreading the prosocial work that's already well-established)
+
+### Appendix (read if you want)
+
+### Delving into differences
+
+Here we pull the groups apart--we committed ourselves to this approach with the conjunction effect we've espoused. 
+Here's for the believer data:
+
+```{r echo=FALSE}
+
+# Simple Generalized Linear Mixed-Effects Model
+gmm_believer <- glmer(data = df_believer, 
+              family = "binomial", 
+              IsCorrect ~ 1 + 
+              ReligiousScale +
+              MEQ_Score +
+              (1|IsFemale) +
+              (1|Race) +
+              (1|Age))
+
+Anova(gmm_believer, type="3")
+
+```
+
+Now we'll plot the correctness probabilities for each condition.
+
+### Believer Condition
+
+```{r echo=FALSE, out.width="50%"}
+pred_religious <- ggpredict(gmm_believer, "ReligiousScale")
+plot(pred_religious)
+```
+```{r echo=FALSE, out.width="50%"}
+pred_meq <- ggpredict(gmm_believer, "MEQ_Score")
+plot(pred_meq)
+```
+
+### Nonbeliever Condition
+
+```{r echo=FALSE}
+
+# Simple Generalized Linear Mixed-Effects Model
+gmm_nonbeliever <- glmer(data = df_nonbeliever, 
+              family = "binomial", 
+              IsCorrect ~ 1 + 
+              ReligiousScale +
+              MEQ_Score +
+              (1|IsFemale) +
+              (1|Race) +
+              (1|Age))
+
+Anova(gmm_nonbeliever, type="3")
+
+```
+
+```{r echo=FALSE, out.width="50%"}
+pred_religious <- ggpredict(gmm_nonbeliever, "ReligiousScale")
+plot(pred_religious)
+```
+
+```{r echo=FALSE, out.width="50%"}
+pred_meq <- ggpredict(gmm_nonbeliever, "MEQ_Score")
+plot(pred_meq)
+```
+We're given a strikingly different perspective once we pull these apart. What really seems to
+matter is not their religiosity but their *religiosity when confronted with a bias-affirming option*. 
+
+### Model check!
+
+Combined condition model accuracy
+```{r echo=FALSE}
+# Make some predictions
+df$predictions <- predict(gmm, type = "response")
+df$predictions_IsCorrect = ifelse(df$predictions > 0.5, 1, 0)
+df$accuracy = df$predictions_IsCorrect == df$IsCorrect
+
+mean(df$accuracy)
+```
+
+Believer condition model accuracy
+```{r}
+# Make some predictions
+df_believer$predictions <- predict(gmm_believer, type = "response")
+df_believer$predictions_IsCorrect = ifelse(df_believer$predictions > 0.5, 1, 0)
+df_believer$accuracy = df_believer$predictions_IsCorrect == df_believer$IsCorrect
+
+mean(df_believer$accuracy)
+```
+
+Non-believer condition model accuracy
+```{r}
+# Make some predictions
+df_nonbeliever$predictions <- predict(gmm_nonbeliever, type = "response")
+df_nonbeliever$predictions_IsCorrect = ifelse(df_nonbeliever$predictions > 0.5, 1, 0)
+df_nonbeliever$accuracy = df_nonbeliever$predictions_IsCorrect == df_nonbeliever$IsCorrect
+
+mean(df_nonbeliever$accuracy)
+```
+
+
+Distribution of belief
+```{r}
+
+df %>% 
+  mutate(MeanBelief = mean(ReligiousScale)) %>% 
+  ggplot(aes(x=ReligiousScale, fill=IsCorrect, color=IsCorrect)) + 
+  geom_histogram(binwidth=1) + 
+  geom_vline(mapping =aes(xintercept = MeanBelief), linetype="dashed", 
+                color = "black", size=1)
+```
+
+```{r}
+
+p4 = df %>% 
+  mutate (Correct = if_else(as.numeric(as.character(IsCorrect)) == 1, "True", "False")) %>% 
+  mutate(MeanBelief = mean(ReligiousScale)) %>% 
+  ggplot(aes(x=ReligiousScale, fill=IsCorrect)) + 
+  geom_histogram(binwidth=1.5) + 
+  facet_wrap(~IsBelieverCondition ,labeller = as_labeller(c("0" = "Group A", "1" = "Group B" ))) + 
+  scale_fill_manual(values = c("False" = "#f44336",
+                               "True" = "#4CAF50")) +
+  geom_vline(mapping =aes(xintercept = MeanBelief), linetype="dashed", 
+                color = "black", size=1) +
+  labs(x='Self-reported belief in God/gods (0-100)',
+       title='Relative accuracy', fill='Responded correctly')
+```
+```{r}
+ggsave(p4, file="Religiosity vs Responses.png", width=8, height=4)
+```
+
+
+```{r}
+mean(df$ReligiousScale)
+```
+
+
+## Bayesian Analysis
+
+```{r}
+
+
+prior_believer = get_prior(IsCorrect ~ 0 + ReligiousScale, data = df_believer, family  = gaussian())
+
+priors_believer = c(prior(normal(0, 100), class = b),
+                    prior(normal(0,50), class = sigma))
+
+brm_believer <- brm(IsCorrect ~ 0 + ReligiousScale,
+  data = df_believer,
+  family  = gaussian(),
+  prior = priors_believer,
+  chains = 4,
+  cores = 4,
+  seed = 10,
+  iter = 2000,
+  file = "analysis_test")
+
+summary(brm_believer)
+
+```
+
+```{r}
+
+
+prior_nonbeliever = get_prior(IsCorrect ~ 0 + ReligiousScale, data = df_nonbeliever, family  = gaussian())
+
+priors_nonbeliever = c(prior(normal(0, 100), class = b),
+                    prior(normal(0,50), class = sigma))
+
+brm_nonbeliever <- brm(IsCorrect ~ 0 + ReligiousScale,
+  data = df_nonbeliever,
+  family  = gaussian(),
+  prior = priors_nonbeliever,
+  chains = 4,
+  cores = 4,
+  seed = 10,
+  iter = 2000,
+  file = "analysis_test")
+
+summary(brm_nonbeliever)
+
+```
+
+```{r}
+
+
+prior_combined = get_prior(IsCorrect ~ 1 + IsBelieverCondition + (IsBelieverCondition|ReligiousScale), data = df, family = bernoulli(link = "logit"))
+
+priors_combined = c(prior(normal(0, 100), class = b))
+
+brm_combined <- brm(IsCorrect ~ 1 + IsBelieverCondition + (IsBelieverCondition|ReligiousScale),
+  data = df,
+  family = bernoulli(link = "logit"),
+  prior = priors_combined,
+  chains = 4,
+  cores = 4,
+  seed = 10,
+  iter = 2000,
+  file = "analysis_test")
+
+summary(brm_combined)
+
+```
+
+
+
+
+
+```{r}
+
+#prior = get_prior(IsCorrect ~ 1 + IsBelieverCondition + (IsBelieverCondition|ReligiousScale), data = df, family = bernoulli(link="logit"))
+# prior1 = get_prior(IsCorrect ~ 0 + IsBelieverCondition + (1 + IsBelieverCondition|ReligiousScale), data = df, family = bernoulli(link="logit"))
+# 
+# 
+# priors = c(prior(normal(0, 1), class = Intercept),
+#             prior(normal(0, 0.5), class = b))
+# 
+# 
+# # brm1 <- brm(IsCorrect ~ 1 + IsBelieverCondition + (1 + IsBelieverCondition|ReligiousScale), 
+# 
+# #brm1 <- brm(IsCorrect ~ 1 + IsBelieverCondition + #(IsBelieverCondition|ReligiousScale) + (IsBelieverCondition|MEQ_Score),
+# brm1 <- brm(IsCorrect ~ 0 + IsBelieverCondition + (1 + IsBelieverCondition|ReligiousScale) + (1 + IsBelieverCondition|MEQ_Score)
+#   data = df,
+#   family = bernoulli(link = "logit"),
+#   prior = prior(normal(0, 1), class = b),
+#   chains = 4,
+#   cores = 4,
+#   seed = 10,
+#   iter = 2000,
+#   file = "analysis_test")
+# 
+# 
+# bmod <-brm( pulled_left ~ 0 + factor(actor) + condition*prosoc_left,
+#             data = chimp_data, family = bernoulli(link = "logit"),
+#             prior = prior(normal(0, 10), class = b),
+#             cores = 4, chains = 4, iter=2000,
+#             seed = 10, file = "wk9_bmod")
+
+```
+
+
