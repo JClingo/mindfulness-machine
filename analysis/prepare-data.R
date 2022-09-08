@@ -8,14 +8,32 @@ library(qualtRics)
 
 # 8-14 MLQ Absolutely Untrue-True
 
-df_raw = read_survey('./data/Mindfulness+Machine+-+Main+Condition_August+20,+2022_23.04.csv', add_var_labels = FALSE) %>% 
-  filter (Finished == 1) %>% 
+df_main_raw = read_survey('./data/Mindfulness+Machine+-+Main+Condition_August+25,+2022_18.20.csv', add_var_labels = FALSE) %>% 
+  filter (Finished == 1) %>%
+  mutate(Condition = 0) %>% 
   select(-StartDate, -EndDate, -Status, -IPAddress, -Progress, -`Duration (in seconds)`, -Finished, -RecordedDate, -ResponseId,
          -RecipientLastName, -RecipientFirstName, -RecipientEmail, -ExternalReference, -LocationLatitude, -LocationLongitude, 
           -DistributionChannel, -UserLanguage)
 
 # MLQ Scoring - http://www.michaelfsteger.com/wp-content/uploads/2013/12/MLQ-description-scoring-and-feedback-packet.pdf
 
+df_control_raw = read_survey('./data/Mindfulness+Machine+-+Control+Condition_August+25,+2022_18.21.csv', add_var_labels = FALSE) %>% 
+  filter (Finished == 1) %>% 
+  mutate(Condition = 1) %>% 
+  select(-StartDate, -EndDate, -Status, -IPAddress, -Progress, -`Duration (in seconds)`, -Finished, -RecordedDate, -ResponseId,
+         -RecipientLastName, -RecipientFirstName, -RecipientEmail, -ExternalReference, -LocationLatitude, -LocationLongitude, 
+         -DistributionChannel, -UserLanguage)
+
+
+df_baseline_raw = read_survey('./data/Mindfulness+Machine+-+Baseline_August+22,+2022_15.00.csv', add_var_labels = FALSE) %>% 
+  filter (Finished == 1, `Consent-Simple` == 1) %>% 
+  mutate(Condition = 2, ParticipantID = 0) %>% 
+  select(-StartDate, -EndDate, -Status, -IPAddress, -Progress, -`Duration (in seconds)`, -Finished, -RecordedDate, -ResponseId,
+         -RecipientLastName, -RecipientFirstName, -RecipientEmail, -ExternalReference, -LocationLatitude, -LocationLongitude, 
+         -DistributionChannel, -UserLanguage, -`Consent-Simple`)
+
+#df_raw = rbind(df_main_raw, df_control_raw, df_baseline_raw)
+df_raw = bind_rows(df_main_raw, df_control_raw, df_baseline_raw)
 
 df = df_raw %>% 
   mutate(ID = row_number()) %>% 
@@ -29,48 +47,27 @@ df = df_raw %>%
   mutate(AWE_SelfLoss = select(., AWE_5:AWE_10) %>% rowSums(na.rm = TRUE)) %>% 
   mutate(AWE_Connectedness = select(., AWE_11:AWE_15) %>% rowSums(na.rm = TRUE))
 
-# Time, Self-loss, Connectedness
-
 df$Gender = as.factor(df$Gender)
 df$Psychedelic = as.factor(df$Psychedelic)
 df$HasTakenPsychedelic = as.factor(df$HasTakenPsychedelic)
 df$IsFemale = as.factor(df$IsFemale)
 
+# df$MLQ = as.factor(df$MLQ)
+# df$MLQ_Presence = as.factor(df$MLQ_Presence)
+# df$MLQ_Search = as.factor(df$MLQ_Search)
+# 
+# df$AWE = as.factor(df$AWE)
+# df$AWE_Time = as.factor(df$AWE_Time)
+# df$AWE_SelfLoss = as.factor(df$AWE_SelfLoss)
+# df$AWE_Connectedness = as.factor(df$AWE_Connectedness)
 
 
-df$Mystical1_1 = as.factor(df$Mystical1_1)
-df$Mystical1_2 = as.factor(df$Mystical1_2)
-df$Mystical1_3 = as.factor(df$Mystical1_3)
-df$Mystical1_4 = as.factor(df$Mystical1_4)
-df$Mystical1_5 = as.factor(df$Mystical1_5)
-df$Mystical1_6 = as.factor(df$Mystical1_6)
-df$Mystical2_1 = as.factor(df$Mystical2_1)
-df$Mystical2_2 = as.factor(df$Mystical2_2)
-df$Mystical2_3 = as.factor(df$Mystical2_3)
-df$Mystical2_4 = as.factor(df$Mystical2_4)
-df$Mystical2_5 = as.factor(df$Mystical2_5)
-df$Mystical2_6 = as.factor(df$Mystical2_6)
-df$Mystical3_1 = as.factor(df$Mystical3_1)
-df$Mystical3_2 = as.factor(df$Mystical3_2)
-df$Mystical3_3 = as.factor(df$Mystical3_3)
-df$Mystical3_4 = as.factor(df$Mystical3_4)
-df$Mystical3_5 = as.factor(df$Mystical3_5)
-df$Mystical3_6 = as.factor(df$Mystical3_6)
-df$Mystical4_1 = as.factor(df$Mystical4_1)
-df$Mystical4_2 = as.factor(df$Mystical4_2)
-df$Mystical4_3 = as.factor(df$Mystical4_3)
-df$Mystical4_4 = as.factor(df$Mystical4_4)
-df$Mystical4_5 = as.factor(df$Mystical4_5)
-df$Mystical4_6 = as.factor(df$Mystical4_6)
-df$Mystical5_1 = as.factor(df$Mystical5_1)
-df$Mystical5_2 = as.factor(df$Mystical5_2)
-df$Mystical5_3 = as.factor(df$Mystical5_3)
-df$Mystical5_4 = as.factor(df$Mystical5_4)
-df$Mystical5_5 = as.factor(df$Mystical5_5)
-  
+
+
+# df$Mystical1_1 = as.factor(df$Mystical1_1)
 
 # Store the results for analysis
 
-saveRDS(df, file = "./data/main.rds")
+saveRDS(df, file = "./data/raw.rds")
 
 
