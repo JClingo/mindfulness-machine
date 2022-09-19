@@ -46,7 +46,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   holograph: {fileID: 1653715400803503387, guid: a88ad0223d857e344b10056e14ab4023,
     type: 3}
-  pointCloud: {fileID: 6022153769078511597, guid: 752e2710fe943544199c51962f1d711a,
-    type: 3}
-  point: {fileID: 8674942348404235256, guid: cb082b82a43e3b743b28973284655621, type: 3}
-  seed: 1999
+  hueValues: []
+  seed: 2000

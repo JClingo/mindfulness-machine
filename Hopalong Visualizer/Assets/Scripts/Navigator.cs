@@ -10,10 +10,10 @@ using UnityEngine;
 public class Navigator : MonoBehaviour
 {
     public GameObject holograph;
-    public GameObject pointCloud;
-    public GameObject point;
 
-    public int seed = 1999;
+    public HolographVertices holographVertices;
+
+    public int seed;
 
 
     // Start is called before the first frame update
@@ -21,89 +21,35 @@ public class Navigator : MonoBehaviour
     {
         Random.InitState(seed);
         // calculate holograph (of several hopalong orbits)
-        HolographVertices holographVertices = GenerateHolographVertices(seed);
+        holographVertices = GenerateHolographVertices(seed);
         // generate color field
-        float[] hueValues = GenerateColors(seed, GLOBALS.NUM_SUBSETS);
-
-        // generate particleCloud (made from points)
-        //for (int i = 0; i < GLOBALS.NUM_LEVELS; i++)
-        //{
-        //    for (int j = 0; j < GLOBALS.NUM_SUBSETS; j++)
-        //    {
-        //        Vector3[] points = new Vector3[GLOBALS.NUM_POINTS_SUBSET];
-        //        for (int k = 0; k < GLOBALS.NUM_POINTS_SUBSET; k++) points[k] = holographVertices.subsets[j][k];
-
-        //    }
-        //}
 
         // generate intitial Holograph Clusters
 
-        GameObject[] allPoints = new GameObject[GLOBALS.NUM_LEVELS * GLOBALS.NUM_SUBSETS * GLOBALS.NUM_POINTS_SUBSET];
-        int idx = 0;
-        for (int i = 0; i < GLOBALS.NUM_LEVELS; i++)
+        for (int level = 0; level < GLOBALS.NUM_LEVELS; level++)
         {
             
-            GameObject holographClone = Instantiate(holograph, transform); // should attach all this to Navigator
-            holographClone.name = $"Holograph_{i}";
-            for (int j = 0; j < GLOBALS.NUM_SUBSETS; j++)
-            {
-                //GameObject holograph = new GameObject($"Holograph_{i}_{j}");
-                
-                GameObject pointCloudClone = Instantiate(pointCloud, holographClone.transform);
-                pointCloudClone.name = $"Point Cloud_{i}_{j}";
-                for (int k = 0; k < GLOBALS.NUM_POINTS_SUBSET; k++)
-                {
-                    //point = new GameObject($"Point_{i}_{j}_{k}");
-                    //allPoints[idx++] = Instantiate(point, pointCloud.transform);
-                    GameObject pointClone = Instantiate(point, pointCloudClone.transform);
-                    pointClone.name = $"Point_{i}_{j}_{k}";
-                    Vector3 position = holographVertices.subsets[j, k].vertex;
-                    position.z = -GLOBALS.LEVEL_DEPTH * i - (j - GLOBALS.LEVEL_DEPTH / GLOBALS.NUM_SUBSETS) + GLOBALS.SCALE_FACTOR / 2;
-                    pointClone.transform.position = position;
+            GameObject holographClone = Instantiate(holograph, transform);
+            holographClone.name = $"Holograph_{level}";
+            Holograph script = holographClone.GetComponent<Holograph>();
+            script.Initialize(level, holographVertices);
 
-                }
-                //CombineMeshes(pointCloudClone);
-            }
         }
 
-        // combine meshes for efficiency
-
+        StartCoroutine(GenerateParams());
 
 
     }
 
-    /// <summary>
-    /// Combines the given object's children into a single mesh
-    /// </summary>
-    /// <param name="obj"></param>
-    public void CombineMeshes(GameObject obj)
+    public IEnumerator GenerateParams()
     {
-        //Temporarily set position to zero to make matrix math easier
-        Vector3 position = obj.transform.position;
-        obj.transform.position = Vector3.zero;
-
-        //Get all mesh filters and combine
-        MeshFilter[] meshFilters = obj.GetComponentsInChildren<MeshFilter>();
-        CombineInstance[] combine = new CombineInstance[meshFilters.Length];
-        int i = 1;
-        while (i < meshFilters.Length)
+        for (;;)
         {
-            combine[i].mesh = meshFilters[i].sharedMesh;
-            combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
-            meshFilters[i].gameObject.SetActive(false);
-            i++;
+            holographVertices = GenerateHolographVertices(++seed);
+            Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
+            yield return new WaitForSeconds(GLOBALS.NEW_ORBIT_INTERVAL);
         }
-
-        obj.transform.GetComponent<MeshFilter>().mesh = new Mesh();
-        obj.transform.GetComponent<MeshFilter>().mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-        obj.transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine, true, true);
-        obj.transform.gameObject.SetActive(true);
-
-        //Return to original position
-        obj.transform.position = position;
-
-        //Add collider to mesh (if needed)
-        //obj.AddComponent<MeshCollider>();
+        
     }
 
     private float[] GenerateColors(int seed, int n)
@@ -205,11 +151,12 @@ public static class GLOBALS
     public const int NUM_POINTS_SUBSET = 1000;
     public const int SCALE_FACTOR = 1600;
     public const int SPRITE_SCALE_FACTOR = 800;
-    public const int CAMERA_BOUND = 200;
+    public const int CAMERA_BOUND = 3000;
     public const float FOG_DENSITY = 0.0012f;
     public const int LEVEL_DEPTH = 400;
     public const float DEF_BRIGHTNESS = 0.5f;
     public const float DEF_SATURATION = 1f;
+    public const int NEW_ORBIT_INTERVAL = 4; // seconds
 }
 
 public class HolographVertices

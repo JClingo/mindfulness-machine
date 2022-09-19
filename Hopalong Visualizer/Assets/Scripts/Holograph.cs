@@ -1,0 +1,184 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+[RequireComponent(typeof(MeshFilter))]
+[RequireComponent(typeof(MeshRenderer))]
+public class Holograph : MonoBehaviour
+{
+
+    public float speed = 100f;
+    public float rotationSpeed = -10f;
+    public float rotationSmooth = 5.0f;
+    public GameObject pointCloud;
+    private bool looping = false;
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    public void Initialize(int level, HolographVertices holographVertices)
+    {
+        //transform.position = new Vector3(0, 0, -GLOBALS.LEVEL_DEPTH * level - (j - GLOBALS.LEVEL_DEPTH / GLOBALS.NUM_SUBSETS) + GLOBALS.SCALE_FACTOR / 2);
+        transform.position = new Vector3(0, 0, GLOBALS.LEVEL_DEPTH * level);
+        
+
+        for (int subsetIdx = 0; subsetIdx < GLOBALS.NUM_SUBSETS; subsetIdx++)
+        {
+            //GameObject holograph = new GameObject($"Holograph_{i}_{j}");
+
+            GameObject pointCloudClone = Instantiate(pointCloud, transform);
+            pointCloudClone.name = $"Point Cloud_{level}_{subsetIdx}";
+
+            PointCloud script = pointCloudClone.GetComponent<PointCloud>();
+            script.Initialize(level, subsetIdx, holographVertices);
+
+        }
+
+        //CombineMeshes(gameObject);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+        transform.position -= new Vector3(0, 0, speed * Time.deltaTime);   
+
+        transform.Rotate(Vector3.forward * Time.deltaTime * rotationSpeed);
+        //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSmooth);
+        // if we've reached the edge of our space
+        
+        if (transform.localPosition.z <= -(GLOBALS.CAMERA_BOUND))
+        {
+            if (!looping)
+            {
+
+                looping = true;
+                // TODO: Get latest orbits and set each position for this holograph
+                // TODO: Get latest color and set for this holograph
+
+                //CombineMeshes(gameObject);
+
+                StartCoroutine(EndCycle());
+            }
+
+
+           
+
+        }
+
+        
+    }
+
+    public IEnumerator EndCycle()
+    {
+
+        while(GetComponent<Renderer>().material.color.a > 0)
+        {
+            Color objectColor = GetComponent<Renderer>().material.color;
+            float fadeAmount = objectColor.a - (speed * Time.deltaTime / 10);
+            objectColor = new Color(objectColor.r, objectColor.g, objectColor.b, fadeAmount);
+            GetComponent<Renderer>().material.color = objectColor;
+            yield return null;
+        }
+        // move to the other end
+        transform.position = new Vector3(0, 0, GLOBALS.CAMERA_BOUND);
+
+        // get latest vertices
+        Navigator navScript = transform.parent.GetComponent<Navigator>();
+        HolographVertices holographVertices = navScript.holographVertices;
+
+        foreach (Transform pointCloud in transform)
+        {
+            //PointCloud script = pointCloudClone.GetComponent<PointCloud>();
+            //script.Initialize(level, subsetIdx, holographVertices);
+
+           
+
+            PointCloud pointCloudScript = pointCloud.GetComponent<PointCloud>();
+            int subsetIdx = pointCloudScript.subsetIdx;
+
+            //Point[] points = gameObject.transform.GetComponentsInChildren<Point>();
+
+            // HACK: mixing index with points here is dangerous but it works, so...
+            int pointsIdx = 0;
+            foreach (Transform point in pointCloud.transform)
+            {
+                Vector3 position = holographVertices.subsets[subsetIdx, pointsIdx].vertex;
+                //point.transform.localPosition = position;
+                point.transform.localPosition = position;
+            }
+
+
+
+            // re-combine meshes
+            pointCloudScript.CombineMeshes(true);
+            pointCloudScript.SetColors();
+
+        }
+
+        
+
+
+
+
+        yield return StartCoroutine(StartCycle());
+        
+        
+    }
+
+    public IEnumerator StartCycle()
+    {
+        while (GetComponent<Renderer>().material.color.a < 1)
+        {
+            Color objectColor = GetComponent<Renderer>().material.color;
+            float fadeAmount = objectColor.a + (speed * Time.deltaTime / 10);
+            objectColor = new Color(objectColor.r, objectColor.g, objectColor.b, fadeAmount);
+            GetComponent<Renderer>().material.color = objectColor;
+            yield return null;
+        }
+
+        looping = false;
+
+    }
+
+    /// <summary>
+    /// Combines the given object's children into a single mesh
+    /// </summary>
+    /// <param name="obj"></param>
+    public void CombineMeshes(GameObject obj)
+    {
+        //Temporarily set position to zero to make matrix math easier
+        Vector3 position = obj.transform.position;
+        obj.transform.position = Vector3.zero;
+
+        //Get all mesh filters and combine
+        MeshFilter[] meshFilters = obj.GetComponentsInChildren<MeshFilter>();
+        CombineInstance[] combine = new CombineInstance[meshFilters.Length];
+        int i = 0;
+        while (i < meshFilters.Length)
+        {
+            combine[i].mesh = meshFilters[i].sharedMesh;
+            combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+            // can't deactivate!
+            //meshFilters[i].gameObject.SetActive(false);
+            i++;
+        }
+
+        obj.transform.GetComponent<MeshFilter>().mesh = new Mesh();
+        obj.transform.GetComponent<MeshFilter>().mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        obj.transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine, true, true);
+        obj.transform.gameObject.SetActive(true);
+
+        //Return to original position
+        obj.transform.position = position;
+
+        //Add collider to mesh (if needed)
+        //obj.AddComponent<MeshCollider>();
+    }
+}
