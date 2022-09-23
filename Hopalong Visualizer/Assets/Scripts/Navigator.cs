@@ -156,7 +156,7 @@ public static class GLOBALS
     public const int LEVEL_DEPTH = 400;
     public const float DEF_BRIGHTNESS = 0.5f;
     public const float DEF_SATURATION = 1f;
-    public const int NEW_ORBIT_INTERVAL = 4; // seconds
+    public const int NEW_ORBIT_INTERVAL = 6; // seconds
 }
 
 public class HolographVertices

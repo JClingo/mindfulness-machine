@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -14,6 +15,8 @@ public class Holograph : MonoBehaviour
     public float rotationSmooth = 5.0f;
     public GameObject pointCloud;
     private bool looping = false;
+
+    
 
 
     // Start is called before the first frame update
@@ -109,7 +112,7 @@ public class Holograph : MonoBehaviour
             int pointsIdx = 0;
             foreach (Transform point in pointCloud.transform)
             {
-                Vector3 position = holographVertices.subsets[subsetIdx, pointsIdx].vertex;
+                Vector3 position = holographVertices.subsets[subsetIdx, pointsIdx++].vertex;
                 //point.transform.localPosition = position;
                 point.transform.localPosition = position;
             }
@@ -117,7 +120,7 @@ public class Holograph : MonoBehaviour
 
 
             // re-combine meshes
-            pointCloudScript.CombineMeshes(true);
+            pointCloudScript.ScheduleCombineMeshesJob();
             pointCloudScript.SetColors();
 
         }
@@ -147,38 +150,40 @@ public class Holograph : MonoBehaviour
 
     }
 
-    /// <summary>
-    /// Combines the given object's children into a single mesh
-    /// </summary>
-    /// <param name="obj"></param>
-    public void CombineMeshes(GameObject obj)
-    {
-        //Temporarily set position to zero to make matrix math easier
-        Vector3 position = obj.transform.position;
-        obj.transform.position = Vector3.zero;
+    ///// <summary>
+    ///// Combines the given object's children into a single mesh
+    ///// </summary>
+    ///// <param name="obj"></param>
+    //public void CombineMeshes(GameObject obj)
+    //{
+    //    //Temporarily set position to zero to make matrix math easier
+    //    Vector3 position = obj.transform.position;
+    //    obj.transform.position = Vector3.zero;
 
-        //Get all mesh filters and combine
-        MeshFilter[] meshFilters = obj.GetComponentsInChildren<MeshFilter>();
-        CombineInstance[] combine = new CombineInstance[meshFilters.Length];
-        int i = 0;
-        while (i < meshFilters.Length)
-        {
-            combine[i].mesh = meshFilters[i].sharedMesh;
-            combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
-            // can't deactivate!
-            //meshFilters[i].gameObject.SetActive(false);
-            i++;
-        }
+    //    //Get all mesh filters and combine
+    //    MeshFilter[] meshFilters = obj.GetComponentsInChildren<MeshFilter>();
+    //    CombineInstance[] combine = new CombineInstance[meshFilters.Length];
+    //    int i = 0;
+    //    while (i < meshFilters.Length)
+    //    {
+    //        combine[i].mesh = meshFilters[i].sharedMesh;
+    //        combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+    //        // can't deactivate!
+    //        //meshFilters[i].gameObject.SetActive(false);
+    //        i++;
+    //    }
 
-        obj.transform.GetComponent<MeshFilter>().mesh = new Mesh();
-        obj.transform.GetComponent<MeshFilter>().mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-        obj.transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine, true, true);
-        obj.transform.gameObject.SetActive(true);
+    //    obj.transform.GetComponent<MeshFilter>().mesh = new Mesh();
+    //    obj.transform.GetComponent<MeshFilter>().mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+    //    obj.transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine, true, true);
+    //    obj.transform.gameObject.SetActive(true);
 
-        //Return to original position
-        obj.transform.position = position;
+    //    //Return to original position
+    //    obj.transform.position = position;
 
-        //Add collider to mesh (if needed)
-        //obj.AddComponent<MeshCollider>();
-    }
+    //    //Add collider to mesh (if needed)
+    //    //obj.AddComponent<MeshCollider>();
+    //}
 }
+
+
