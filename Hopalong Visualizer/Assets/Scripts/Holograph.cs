@@ -48,20 +48,7 @@ public class Holograph : MonoBehaviour
         //GenerateMesh();
 
 
-        /// -- OLD WAY
-
-        //for (int subsetIdx = 0; subsetIdx < GLOBALS.NUM_SUBSETS; subsetIdx++)
-        //{
-
-        //    GameObject pointCloudClone = Instantiate(pointCloud, transform);
-        //    pointCloudClone.name = $"Point Cloud_{level}_{subsetIdx}";
-
-        //    PointCloud script = pointCloudClone.GetComponent<PointCloud>();
-        //    script.Initialize(level, subsetIdx, holographVertices);
-
-        //}
-
-        //CombineMeshes(gameObject);
+        
     }
 
     // Update is called once per frame
@@ -80,10 +67,7 @@ public class Holograph : MonoBehaviour
             {
 
                 looping = true;
-                // TODO: Get latest orbits and set each position for this holograph
-                // TODO: Get latest color and set for this holograph
-
-                //CombineMeshes(gameObject);
+                
 
                 StartCoroutine(EndCycle());
             }
@@ -96,59 +80,21 @@ public class Holograph : MonoBehaviour
         
     }
 
-    /// <summary>
-    /// Generate a mesh from the hopalong orbits we generated
-    /// </summary>
-    //public void GenerateMesh()
-    //{
-    //    mesh = new Mesh();
-    //    GetComponent<MeshFilter>().mesh = mesh;
-
-    //    CreateShape();
-    //    UpdateMesh();
-
-
-    //}
-
-    //public void CreateShape()
-    //{
-    //    //vertices = new Vector3[]
-    //    //{
-    //    //    new Vector3(0,0,0),
-    //    //    new Vector3(0,0,1),
-    //    //    new Vector3(1,0,0),
-    //    //    new Vector3(1,0,1)
-    //    //};
-
-    //    triangles = new int[]
-    //    {
-    //        0,1,2,
-    //        1,3,2
-    //    };
-
-    //}
-
-    //public void UpdateMesh()
-    //{
-    //    mesh.Clear();
-    //    mesh.vertices = vertices;
-    //    mesh.triangles = triangles;
-    //    mesh.RecalculateNormals();
-    //}
+    
 
 
 
     public IEnumerator EndCycle()
     {
-
-        //while(GetComponent<Renderer>().material.color.a > 0)
-        //{
-        //    Color objectColor = GetComponent<Renderer>().material.color;
-        //    float fadeAmount = objectColor.a - (speed * Time.deltaTime / 10);
-        //    objectColor = new Color(objectColor.r, objectColor.g, objectColor.b, fadeAmount);
-        //    GetComponent<Renderer>().material.color = objectColor;
-        //    yield return null;
-        //}
+        Material testMaterial = GetComponent<Renderer>().material;
+        while (GetComponent<Renderer>().material.color.a > 0)
+        {
+            Color objectColor = GetComponent<Renderer>().material.color;
+            float fadeAmount = objectColor.a - (speed * Time.deltaTime / 10);
+            objectColor = new Color(objectColor.r, objectColor.g, objectColor.b, fadeAmount);
+            GetComponent<Renderer>().material.color = objectColor;
+            yield return null;
+        }
         // move to the other end
         transform.position = new Vector3(0, 0, GLOBALS.CAMERA_BOUND);
 
