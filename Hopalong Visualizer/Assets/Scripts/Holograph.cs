@@ -86,15 +86,15 @@ public class Holograph : MonoBehaviour
 
     public IEnumerator EndCycle()
     {
-        Material testMaterial = GetComponent<Renderer>().material;
-        while (GetComponent<Renderer>().material.color.a > 0)
-        {
-            Color objectColor = GetComponent<Renderer>().material.color;
-            float fadeAmount = objectColor.a - (speed * Time.deltaTime / 10);
-            objectColor = new Color(objectColor.r, objectColor.g, objectColor.b, fadeAmount);
-            GetComponent<Renderer>().material.color = objectColor;
-            yield return null;
-        }
+        //Material testMaterial = GetComponent<Renderer>().material;
+        //while (GetComponent<Renderer>().material.color.a > 0)
+        //{
+        //    Color objectColor = GetComponent<Renderer>().material.color;
+        //    float fadeAmount = objectColor.a - (speed * Time.deltaTime / 10);
+        //    objectColor = new Color(objectColor.r, objectColor.g, objectColor.b, fadeAmount);
+        //    GetComponent<Renderer>().material.color = objectColor;
+        //    yield return null;
+        //}
         // move to the other end
         transform.position = new Vector3(0, 0, GLOBALS.CAMERA_BOUND);
 
