@@ -11,16 +11,15 @@ using UnityEngine.UIElements;
 public class Holograph : MonoBehaviour
 {
 
-    public float speed = 150f;
-    public float rotationSpeed = -10f;
-    public float rotationSmooth = 5.0f;
-    public GameObject pointCloud;
+    public float speed;
+    public float rotationSpeed;
+    public float rotationSmooth;
     private bool looping = false;
 
-    //Vector3[] vertices;
+    private Color32[] meshColors;
 
-    //int[] triangles;
-    Mesh mesh;
+
+    private Navigator parent;
 
     
 
@@ -28,18 +27,21 @@ public class Holograph : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (mesh == null) mesh = new Mesh();
+        
     }
 
     public void Initialize(int level, Mesh generatedMesh)
     {
+
+        parent = transform.parent.GetComponent<Navigator>();
+
         //transform.position = new Vector3(0, 0, -GLOBALS.LEVEL_DEPTH * level - (j - GLOBALS.LEVEL_DEPTH / GLOBALS.NUM_SUBSETS) + GLOBALS.SCALE_FACTOR / 2);
         transform.position = new Vector3(0, 0, GLOBALS.LEVEL_DEPTH * level);
 
-        mesh = Instantiate(generatedMesh);
+        Mesh mesh = Instantiate(generatedMesh);
 
-        Color meshColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
-        Color[] meshColors = new Color[mesh.vertices.Length];
+        Color meshColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f, 0.5f, 0.5f);
+        meshColors = new Color32[mesh.vertices.Length];
         System.Array.Fill(meshColors, meshColor);
         mesh.SetColors(meshColors);
         GetComponent<MeshFilter>().mesh = mesh;
@@ -99,15 +101,25 @@ public class Holograph : MonoBehaviour
         transform.position = new Vector3(0, 0, GLOBALS.CAMERA_BOUND);
 
         // get latest vertices
-        Navigator navScript = transform.parent.GetComponent<Navigator>();
-        
-        mesh = Instantiate(navScript.mesh);
-        Color meshColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
-        Color[] meshColors = new Color[mesh.vertices.Length];
+
+
+        //Mesh mesh = Instantiate(parent.mesh);
+
+        Mesh mesh = GetComponent<MeshFilter>().mesh;
+
+        Color32 meshColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f, 0.5f, 0.5f);
+        meshColors = new Color32[mesh.vertices.Length];
         System.Array.Fill(meshColors, meshColor);
+        
+        mesh.vertices = parent.mesh.vertices;
+        mesh.triangles = parent.mesh.triangles;
         mesh.SetColors(meshColors);
 
         GetComponent<MeshFilter>().mesh = mesh;
+
+
+
+
 
         //mesh.RecalculateNormals();
 

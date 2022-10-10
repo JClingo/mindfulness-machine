@@ -46,11 +46,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9d6204e0d93abb4dabf9521b6764180, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 400
-  rotationSpeed: 10
+  speed: 800
+  rotationSpeed: 15
   rotationSmooth: 5
-  pointCloud: {fileID: 6022153769078511597, guid: 752e2710fe943544199c51962f1d711a,
-    type: 3}
 --- !u!33 &6447548998401224687
 MeshFilter:
   m_ObjectHideFlags: 0

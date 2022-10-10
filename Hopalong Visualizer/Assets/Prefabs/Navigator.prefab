@@ -46,5 +46,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   holograph: {fileID: 1653715400803503387, guid: a88ad0223d857e344b10056e14ab4023,
     type: 3}
-  hueValues: []
-  seed: 2000
+  mesh: {fileID: 0}
+  seed: 2001
+  numPointsSubset: 20000
