@@ -164,13 +164,13 @@ public class Navigator : MonoBehaviour
 
 public static class GLOBALS
 {
-    public const int NUM_LEVELS = 15;
-    public const int NUM_SUBSETS = 7;
+    public const int NUM_LEVELS = 16;
+    public const int NUM_SUBSETS = 8;
     
-    public const int SCALE_FACTOR = 1000;
+    public const int SCALE_FACTOR = 600;
     public const int CAMERA_BOUND = 2000;
     public const int LEVEL_DEPTH = 200;
-    public const int NEW_ORBIT_INTERVAL = 5; // seconds
+    public const int NEW_ORBIT_INTERVAL = 4; // seconds
     public const float POINT_SIZE = 1f;
 }
 

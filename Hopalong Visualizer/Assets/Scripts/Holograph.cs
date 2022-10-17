@@ -20,6 +20,7 @@ public class Holograph : MonoBehaviour
 
 
     private Navigator parent;
+    private Mesh mesh;
 
     
 
@@ -38,9 +39,8 @@ public class Holograph : MonoBehaviour
         //transform.position = new Vector3(0, 0, -GLOBALS.LEVEL_DEPTH * level - (j - GLOBALS.LEVEL_DEPTH / GLOBALS.NUM_SUBSETS) + GLOBALS.SCALE_FACTOR / 2);
         transform.position = new Vector3(0, 0, GLOBALS.LEVEL_DEPTH * level);
 
-        Mesh mesh = Instantiate(generatedMesh);
-
-        Color meshColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f, 0.5f, 0.5f);
+        mesh = Instantiate(generatedMesh);
+        Color meshColor = Random.ColorHSV(0f, 1f, 0.85f, 1f, 0.5f, 1f, 0.5f, 0.5f);
         meshColors = new Color32[mesh.vertices.Length];
         System.Array.Fill(meshColors, meshColor);
         mesh.SetColors(meshColors);
@@ -97,18 +97,17 @@ public class Holograph : MonoBehaviour
         //    GetComponent<Renderer>().material.color = objectColor;
         //    yield return null;
         //}
-        // move to the other end
-        transform.position = new Vector3(0, 0, GLOBALS.CAMERA_BOUND);
+        
 
         // get latest vertices
 
 
         //Mesh mesh = Instantiate(parent.mesh);
 
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
+        
 
-        Color32 meshColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f, 0.5f, 0.5f);
-        meshColors = new Color32[mesh.vertices.Length];
+        Color32 meshColor = Random.ColorHSV(0f, 1f, 0.85f, 1f, 0.5f, 1f, 0.5f, 0.5f);
+        
         System.Array.Fill(meshColors, meshColor);
         
         mesh.vertices = parent.mesh.vertices;
@@ -117,7 +116,8 @@ public class Holograph : MonoBehaviour
 
         GetComponent<MeshFilter>().mesh = mesh;
 
-
+        // move to the other end
+        transform.position = new Vector3(0, 0, GLOBALS.CAMERA_BOUND);
 
 
 
