@@ -19,7 +19,9 @@ public class Navigator : MonoBehaviour
 
     private Vector3[] vertices;
     private int[] triangles;
+    private Vector2[] uvs;
     private HolographVertices holographVertices;
+    private int totalPoints;
 
 
     // Start is called before the first frame update
@@ -27,8 +29,10 @@ public class Navigator : MonoBehaviour
     {
         Random.InitState(seed);
         // create holograph mesh (of several hopalong orbits)
-        vertices = new Vector3[GLOBALS.NUM_SUBSETS * numPointsSubset * 4]; // 4 vertices per point
-        triangles = new int[(int)(GLOBALS.NUM_SUBSETS * numPointsSubset * 6)]; // 6 triangles per point
+        totalPoints = GLOBALS.NUM_SUBSETS * numPointsSubset;
+        vertices = new Vector3[totalPoints * 4]; // 4 vertices per point
+        triangles = new int[(int)(totalPoints * 6)]; // 6 triangles per point
+        uvs = new Vector2[totalPoints * 4];
         mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         holographVertices = new HolographVertices(seed, numPointsSubset);
@@ -118,12 +122,11 @@ public class Navigator : MonoBehaviour
         holographVertices.yMax = yMax;
 
        
-        
-
-        // Normalize vertex data
-
-       // vIdx == vertex index
-        for (int vIdx = 0, subsetIdx = 0; subsetIdx < GLOBALS.NUM_SUBSETS; subsetIdx++)
+        // hand-build vertices, triangles, and uvs
+        // each "point" is a quad, centered around a single point
+        // 
+        // idx == vertex index
+        for (int idx = 0, subsetIdx = 0; subsetIdx < GLOBALS.NUM_SUBSETS; subsetIdx++)
         {
             for (int pointIdx = 0; pointIdx < numPointsSubset; pointIdx++)
             {
@@ -133,22 +136,40 @@ public class Navigator : MonoBehaviour
                 float pointY = (scaleY * (subset.y - yMin)) - GLOBALS.SCALE_FACTOR;
                 float pointZ = subset.vertex.z;
 
-                vertices[vIdx].Set(pointX - GLOBALS.POINT_SIZE, pointY - GLOBALS.POINT_SIZE, pointZ);
-                vertices[vIdx + 1].Set(pointX - GLOBALS.POINT_SIZE, pointY + GLOBALS.POINT_SIZE, pointZ);
-                vertices[vIdx+2].Set(pointX + GLOBALS.POINT_SIZE, pointY - GLOBALS.POINT_SIZE, pointZ);
-                vertices[vIdx+3].Set(pointX + GLOBALS.POINT_SIZE, pointY + GLOBALS.POINT_SIZE, pointZ);
 
-                int tIdx = (int)(vIdx * 1.5f);
+                float vXMin = pointX - GLOBALS.POINT_SIZE;
+                float vXMax = pointX + GLOBALS.POINT_SIZE;
+                float vYMin = pointY - GLOBALS.POINT_SIZE;
+                float vYMax = pointY + GLOBALS.POINT_SIZE;
 
-                triangles[tIdx] = vIdx;
-                triangles[tIdx + 1] = vIdx + 1;
-                triangles[tIdx + 2] = vIdx + 2;
+                vertices[idx].Set(vXMin, vYMin, pointZ);
+                vertices[idx + 1].Set(vXMin, vYMax, pointZ);
+                vertices[idx + 2].Set(vXMax, vYMin, pointZ);
+                vertices[idx + 3].Set(vXMax, vYMax, pointZ);
 
-                triangles[tIdx + 3] = vIdx + 1;
-                triangles[tIdx + 4] = vIdx + 3;
-                triangles[tIdx + 5] = vIdx + 2;
+                int tIdx = (int)(idx * 1.5f);
 
-                vIdx += 4;
+                triangles[tIdx] = idx;
+                triangles[tIdx + 1] = idx + 1;
+                triangles[tIdx + 2] = idx + 2;
+
+                triangles[tIdx + 3] = idx + 1;
+                triangles[tIdx + 4] = idx + 3;
+                triangles[tIdx + 5] = idx + 2;
+
+                // these are the same as vertices, just normalized to 0,1
+                uvs[idx].Set(vXMin / totalPoints / 2, vYMin / totalPoints / 2);
+                uvs[idx + 1].Set(vXMin / totalPoints / 2, vYMax / totalPoints / 2);
+                uvs[idx + 2].Set(vXMax / totalPoints / 2, vYMin / totalPoints / 2);
+                uvs[idx + 3].Set(vXMax / totalPoints / 2, vYMax / totalPoints / 2);
+
+
+                //uvs[idx].Set((float)idx / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+                //uvs[idx+1].Set((float)(idx + 1) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+                //uvs[idx+2].Set((float)(idx + 2) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+                //uvs[idx+3].Set((float)(idx + 3) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+
+                idx += 4;
 
             }
         }
@@ -156,6 +177,10 @@ public class Navigator : MonoBehaviour
 
         mesh.vertices = vertices;
         mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+        //mesh.uv = uvs;
+        
+
 
 
     }
@@ -165,13 +190,13 @@ public class Navigator : MonoBehaviour
 public static class GLOBALS
 {
     public const int NUM_LEVELS = 16;
-    public const int NUM_SUBSETS = 8;
+    public const int NUM_SUBSETS = 12;
     
     public const int SCALE_FACTOR = 600;
     public const int CAMERA_BOUND = 2000;
     public const int LEVEL_DEPTH = 200;
     public const int NEW_ORBIT_INTERVAL = 4; // seconds
-    public const float POINT_SIZE = 1f;
+    public const float POINT_SIZE = 0.75f;
 }
 
 public class HolographVertices

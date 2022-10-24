@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: -1859640894272355169}
   - component: {fileID: 6447548998401224687}
   - component: {fileID: 7476657928786000918}
+  - component: {fileID: 2052120780875035114}
   m_Layer: 0
   m_Name: Holograph
   m_TagString: Untagged
@@ -46,8 +47,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9d6204e0d93abb4dabf9521b6764180, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 800
-  rotationSpeed: 15
   rotationSmooth: 5
 --- !u!33 &6447548998401224687
 MeshFilter:
@@ -77,7 +76,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f40afcb150493044db0721652230001d, type: 2}
+  - {fileID: -876546973899608171, guid: 4f5dd832d84ec354a9f0aa68ea440671, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -99,3 +98,19 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &2052120780875035114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1653715400803503387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fcb4696e9ee66c46b3046c3b0613977, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputActions: {fileID: -514319265539123407, guid: c348712bda248c246b8c49b3db54643f,
+    type: 3}
+  speed: 1.45
+  rotationSpeed: -0.18

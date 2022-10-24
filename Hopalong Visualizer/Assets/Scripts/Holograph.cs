@@ -11,8 +11,9 @@ using UnityEngine.UIElements;
 public class Holograph : MonoBehaviour
 {
 
-    public float speed;
-    public float rotationSpeed;
+
+    private HolographController holographController;
+
     public float rotationSmooth;
     private bool looping = false;
 
@@ -21,6 +22,7 @@ public class Holograph : MonoBehaviour
 
     private Navigator parent;
     private Mesh mesh;
+    private Renderer rend;
 
     
 
@@ -28,11 +30,13 @@ public class Holograph : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        holographController = GetComponent<HolographController>();
     }
 
     public void Initialize(int level, Mesh generatedMesh)
     {
+
+        rend = GetComponent<Renderer>();
 
         parent = transform.parent.GetComponent<Navigator>();
 
@@ -40,10 +44,18 @@ public class Holograph : MonoBehaviour
         transform.position = new Vector3(0, 0, GLOBALS.LEVEL_DEPTH * level);
 
         mesh = Instantiate(generatedMesh);
-        Color meshColor = Random.ColorHSV(0f, 1f, 0.85f, 1f, 0.5f, 1f, 0.5f, 0.5f);
-        meshColors = new Color32[mesh.vertices.Length];
-        System.Array.Fill(meshColors, meshColor);
-        mesh.SetColors(meshColors);
+        //Renderer renderer = GetComponent<Renderer>();
+        //Color32 meshColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f, 0.5f, 0.5f);
+        //meshColors = new Color32[mesh.vertices.Length];
+        //System.Array.Fill(meshColors, meshColor);
+        
+        //mesh.SetColors(meshColors);
+        
+        mesh.RecalculateNormals();
+
+        rend.material.SetColor("_Color", Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f, 0.5f, 0.5f));
+
+
         GetComponent<MeshFilter>().mesh = mesh;
         //mesh.RecalculateNormals();
 
@@ -57,9 +69,9 @@ public class Holograph : MonoBehaviour
     void Update()
     {
         
-        transform.position -= new Vector3(0, 0, speed * Time.deltaTime);   
+        transform.position -= new Vector3(0, 0, holographController.speed * Time.deltaTime);   
 
-        transform.Rotate(Vector3.forward * Time.deltaTime * rotationSpeed);
+        transform.Rotate(Vector3.forward * Time.deltaTime * holographController.rotationSpeed);
         //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSmooth);
         // if we've reached the edge of our space
         
@@ -88,74 +100,32 @@ public class Holograph : MonoBehaviour
 
     public IEnumerator EndCycle()
     {
-        //Material testMaterial = GetComponent<Renderer>().material;
-        //while (GetComponent<Renderer>().material.color.a > 0)
-        //{
-        //    Color objectColor = GetComponent<Renderer>().material.color;
-        //    float fadeAmount = objectColor.a - (speed * Time.deltaTime / 10);
-        //    objectColor = new Color(objectColor.r, objectColor.g, objectColor.b, fadeAmount);
-        //    GetComponent<Renderer>().material.color = objectColor;
-        //    yield return null;
-        //}
         
-
-        // get latest vertices
-
-
-        //Mesh mesh = Instantiate(parent.mesh);
 
         
 
-        Color32 meshColor = Random.ColorHSV(0f, 1f, 0.85f, 1f, 0.5f, 1f, 0.5f, 0.5f);
+        //Color32 meshColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f, 0.5f, 0.5f);
         
-        System.Array.Fill(meshColors, meshColor);
-        
+        //System.Array.Fill(meshColors, meshColor);
+        //mesh.SetColors(meshColors);
+
         mesh.vertices = parent.mesh.vertices;
         mesh.triangles = parent.mesh.triangles;
-        mesh.SetColors(meshColors);
+        mesh.uv = parent.mesh.uv;
+        mesh.normals = parent.mesh.normals;
+        rend.material.SetColor("_Color", Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f, 0.5f, 0.5f));
+        
 
         GetComponent<MeshFilter>().mesh = mesh;
-
         // move to the other end
         transform.position = new Vector3(0, 0, GLOBALS.CAMERA_BOUND);
 
 
 
-        //mesh.RecalculateNormals();
 
         looping = false;
 
-        // generate a new mesh from the latest vertex/color data
-        //GenerateMesh();
-
-        //foreach (Transform pointCloud in transform)
-        //{
-        //    //PointCloud script = pointCloudClone.GetComponent<PointCloud>();
-        //    //script.Initialize(level, subsetIdx, holographVertices);
-
-
-
-        //    PointCloud pointCloudScript = pointCloud.GetComponent<PointCloud>();
-        //    int subsetIdx = pointCloudScript.subsetIdx;
-
-        //    //Point[] points = gameObject.transform.GetComponentsInChildren<Point>();
-
-        //    //// HACK: mixing index with points here is dangerous but it works, so...
-        //    //int pointsIdx = 0;
-        //    //foreach (Transform point in pointCloud.transform)
-        //    //{
-        //    //    Vector3 position = holographVertices.subsets[subsetIdx, pointsIdx++].vertex;
-        //    //    //point.transform.localPosition = position;
-        //    //    point.transform.localPosition = position;
-        //    //}
-
-
-
-        //    // re-combine meshes
-        //    //pointCloudScript.ScheduleCombineMeshesJob();
-        //    pointCloudScript.SetColors();
-
-        //}
+ 
 
 
 
