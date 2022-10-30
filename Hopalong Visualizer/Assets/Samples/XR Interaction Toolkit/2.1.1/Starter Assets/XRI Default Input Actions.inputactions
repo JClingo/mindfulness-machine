@@ -1379,9 +1379,18 @@
             "id": "9b724adc-9daf-4698-9bbe-32b5667ae93d",
             "actions": [
                 {
-                    "name": "Navigate",
+                    "name": "ChangeSpeedAndRotationSpeed",
                     "type": "PassThrough",
                     "id": "db97146b-2ba7-4abb-b5d7-a0170f390d10",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LookAtObject",
+                    "type": "PassThrough",
+                    "id": "9b2c2be6-3841-4193-9a14-376aba7f458e",
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
@@ -1390,169 +1399,15 @@
             ],
             "bindings": [
                 {
-                    "name": "Gamepad",
-                    "id": "41540a8e-3b41-4316-99fb-e3192fa4f01e",
-                    "path": "2DVector(mode=2)",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "up",
-                    "id": "f50a94cf-d54f-488f-946f-b22c33704820",
-                    "path": "<Gamepad>/leftStick/up",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "up",
-                    "id": "c37437e3-5dc8-4852-967f-bd84c9f3939b",
-                    "path": "<Gamepad>/rightStick/up",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "down",
-                    "id": "ccef5b11-6421-463f-b58b-af657f90f5f5",
-                    "path": "<Gamepad>/leftStick/down",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "down",
-                    "id": "9badf465-7673-40b2-8c37-f14ba951679d",
-                    "path": "<Gamepad>/rightStick/down",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "left",
-                    "id": "92d6bd68-493d-4a2d-b462-fc9b47f99773",
-                    "path": "<Gamepad>/leftStick/left",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "left",
-                    "id": "9125a9d6-8e2b-4bf9-b395-0404abb7875a",
-                    "path": "<Gamepad>/rightStick/left",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "right",
-                    "id": "d1dbacb5-864b-4650-8840-696fe2277e1a",
-                    "path": "<Gamepad>/leftStick/right",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "right",
-                    "id": "eab6034a-b53c-4b7c-869b-9422faed62a5",
-                    "path": "<Gamepad>/rightStick/right",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
                     "name": "",
-                    "id": "bf77deef-4dbe-487a-aab0-226b4af8013f",
-                    "path": "<Gamepad>/dpad",
+                    "id": "c0582740-49f2-4887-9b9f-93395b3ed713",
+                    "path": "<XInputController>/leftStick",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "Joystick",
-                    "id": "315624bc-16cc-4c9a-8d0b-414a28cf559d",
-                    "path": "2DVector",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "up",
-                    "id": "a4b167ff-778f-4d14-8812-84445f46db46",
-                    "path": "<Joystick>/stick/up",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "down",
-                    "id": "72d020ae-49ed-4c5b-b88d-8ccdf0de650d",
-                    "path": "<Joystick>/stick/down",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "left",
-                    "id": "a150e7cf-a15f-4443-92d4-3723a61faf01",
-                    "path": "<Joystick>/stick/left",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "right",
-                    "id": "727c4d3a-f531-4cf1-8d42-e5b9d56e9198",
-                    "path": "<Joystick>/stick/right",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
                 },
                 {
                     "name": "Keyboard",
@@ -1561,7 +1416,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -1572,7 +1427,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -1583,7 +1438,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -1594,7 +1449,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -1605,7 +1460,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -1616,7 +1471,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -1627,7 +1482,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -1638,7 +1493,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -1649,20 +1504,9 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
                     "isComposite": false,
                     "isPartOfComposite": true
-                },
-                {
-                    "name": "",
-                    "id": "623a52e1-fa95-404c-99d4-2dd2a25d3944",
-                    "path": "<OculusTouchController>{RightHand}/thumbstick",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 },
                 {
                     "name": "",
@@ -1671,7 +1515,29 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "ChangeSpeedAndRotationSpeed",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "12d65c42-767a-4344-8040-6dbd1b86cfcb",
+                    "path": "<XInputController>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LookAtObject",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c1fee5da-4ee8-4569-8a78-d58b0cc6eff3",
+                    "path": "<OculusTouchController>{RightHand}/thumbstick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LookAtObject",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
