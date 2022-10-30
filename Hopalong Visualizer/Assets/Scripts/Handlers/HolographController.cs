@@ -47,8 +47,8 @@ public class HolographController : MonoBehaviour
         {
             print(value);
         }
-        speed = 100 + value.y * 2000;
-        rotationSpeed = value.x * 300;
+        speed = 100 + value.y * 3500;
+        rotationSpeed = value.x * 600;
     }
 
 
