@@ -16,10 +16,10 @@ public class DataPersistenceManager : MonoBehaviour
     [Header("File Storage Config")]
     [SerializeField] private string fileName;
 
-    [Header("Auto-saving Config")]
+    [Header("Auto-save Config")]
     [SerializeField] private float autoSaveTimeSeconds = 60f;
 
-    private GameData gameData;
+    private ExperimentData experimentData;
     private List<IDataPersistence> dataPersistenceObjects;
     private FileDataHandler dataHandler;
 
@@ -64,7 +64,7 @@ public class DataPersistenceManager : MonoBehaviour
     public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         this.dataPersistenceObjects = FindAllDataPersistenceObjects();
-        LoadGame();
+        LoadExperiment();
 
         //start up auto-saving coroutine
         if (autoSaveCoroutine != null)
@@ -77,14 +77,14 @@ public class DataPersistenceManager : MonoBehaviour
     public void ChangeSelectedProfileId(string newProfileId)
     {
         this.selectedProfileId = newProfileId;
-        LoadGame();
+        LoadExperiment();
     }
 
     public void DeleteProfileData(string profileId)
     {
         dataHandler.Delete(profileId);
         InitializeSelectedProfileId();
-        LoadGame();
+        LoadExperiment();
     }
 
     private void InitializeSelectedProfileId()
@@ -99,62 +99,62 @@ public class DataPersistenceManager : MonoBehaviour
         }
     }
 
-    public void NewGame()
+    public void NewExperiment()
     {
-        this.gameData = new GameData();
+        this.experimentData = new ExperimentData();
     }
 
-    public void LoadGame()
+    public void LoadExperiment()
     {
         if (disableDataPersistence) return;
 
         // load any saved data from a file
-        this.gameData = dataHandler.Load(selectedProfileId);
+        this.experimentData = dataHandler.Load(selectedProfileId);
 
         // start a new game if the data is null
-        if (this.gameData == null && initializeDataIfNull)
+        if (this.experimentData == null && initializeDataIfNull)
         {
-            NewGame();
+            NewExperiment();
         }
 
         // if cannot load game data, do not continue
-        if (this.gameData == null)
+        if (this.experimentData == null)
         {
-            Debug.Log("No data was found. A new game must be started before data can be loaded");
+            Debug.Log("No data was found. A new experiment must be started before data can be loaded");
             return;
         }
 
 
         foreach(IDataPersistence dataPersistenceObj in dataPersistenceObjects)
         {
-            dataPersistenceObj.LoadData(gameData);
+            dataPersistenceObj.LoadData(experimentData);
         }
     }
 
-    public void SaveGame()
+    public void SaveExperiment()
     {
         if (disableDataPersistence) return;
 
-        if (this.gameData == null)
+        if (this.experimentData == null)
         {
-            Debug.LogWarning("No data was found. A new game be started before data can be loaded");
+            Debug.LogWarning("No data was found. A new experiment be started before data can be loaded");
             return;
         }
 
         foreach(IDataPersistence dataPersistenceObj in dataPersistenceObjects)
         {
-            dataPersistenceObj.SaveData(gameData);
+            dataPersistenceObj.SaveData(experimentData);
         }
 
-        gameData.lastUpdated = System.DateTime.Now.ToBinary();
+        experimentData.lastUpdated = System.DateTime.Now.ToBinary();
 
-        dataHandler.Save(gameData, selectedProfileId);
+        dataHandler.Save(experimentData, selectedProfileId);
 
     }
 
     private void OnApplicationQuit()
     {
-        SaveGame();
+        SaveExperiment();
     }
 
     private List<IDataPersistence> FindAllDataPersistenceObjects()
@@ -164,12 +164,12 @@ public class DataPersistenceManager : MonoBehaviour
         return new List<IDataPersistence>(dataPersistenceObjects);
     }
 
-    public bool HasGameData()
+    public bool HasExperimentData()
     {
-        return gameData != null;
+        return experimentData != null;
     }
 
-    public Dictionary<string, GameData> GetAllProfilesGameData()
+    public Dictionary<string, ExperimentData> GetAllProfilesExperimentData()
     {
         return dataHandler.LoadAllProfiles();
     }
@@ -179,8 +179,8 @@ public class DataPersistenceManager : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(autoSaveTimeSeconds);
-            SaveGame();
-            Debug.Log("Game auto-saved");
+            SaveExperiment();
+            Debug.Log("Experiment auto-saved");
         }
     }
 

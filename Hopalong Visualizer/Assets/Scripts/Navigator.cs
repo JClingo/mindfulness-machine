@@ -76,7 +76,7 @@ public class Navigator : MonoBehaviour
     void UpdateHolographMesh()
     {
         holographVertices.UpdateSubsets(seed, numPointsSubset);
-        
+
         Random.InitState(seed);
 
         float x, y, z, x1;
@@ -121,7 +121,39 @@ public class Navigator : MonoBehaviour
         holographVertices.xMax = xMax;
         holographVertices.yMax = yMax;
 
-       
+
+
+        float pointXMin = 0f;
+        float pointXMax = 0f;
+        float pointYMin = 0f;
+        float pointYMax = 0f;
+
+
+        // calculate range (for normalization)
+        for (int subsetIdx = 0; subsetIdx < GLOBALS.NUM_SUBSETS; subsetIdx++)
+        {
+            for (int pointIdx = 0; pointIdx < numPointsSubset; pointIdx++)
+            {
+                Subset subset = holographVertices.subsets[subsetIdx, pointIdx];
+                float pointX = (scaleX * (subset.x - xMin)) - GLOBALS.SCALE_FACTOR;
+                float pointY = (scaleY * (subset.y - yMin)) - GLOBALS.SCALE_FACTOR;
+
+                float vXMin = pointX - GLOBALS.POINT_SIZE;
+                float vXMax = pointX + GLOBALS.POINT_SIZE;
+                float vYMin = pointY - GLOBALS.POINT_SIZE;
+                float vYMax = pointY + GLOBALS.POINT_SIZE;
+
+                if (vXMin < pointXMin) pointXMin = vXMin;
+                if (vXMax > pointXMax) pointXMax = vXMax;
+                if (vXMin < pointYMin) pointYMin = vYMin;
+                if (vXMax > pointYMax) pointYMax = vYMax;
+            }
+        }
+
+        float pointXRange = pointXMax - pointXMin;
+        float pointYRange = pointYMax - pointYMin;
+
+
         // hand-build vertices, triangles, and uvs
         // each "point" is a quad, centered around a single point
         // 
@@ -135,7 +167,6 @@ public class Navigator : MonoBehaviour
                 float pointX = (scaleX * (subset.x - xMin)) - GLOBALS.SCALE_FACTOR;
                 float pointY = (scaleY * (subset.y - yMin)) - GLOBALS.SCALE_FACTOR;
                 float pointZ = subset.vertex.z;
-
 
                 float vXMin = pointX - GLOBALS.POINT_SIZE;
                 float vXMax = pointX + GLOBALS.POINT_SIZE;
@@ -158,32 +189,68 @@ public class Navigator : MonoBehaviour
                 triangles[tIdx + 5] = idx + 2;
 
                 // these are the same as vertices, just normalized to 0,1
-                uvs[idx].Set(vXMin / totalPoints / 2, vYMin / totalPoints / 2);
-                uvs[idx + 1].Set(vXMin / totalPoints / 2, vYMax / totalPoints / 2);
-                uvs[idx + 2].Set(vXMax / totalPoints / 2, vYMin / totalPoints / 2);
-                uvs[idx + 3].Set(vXMax / totalPoints / 2, vYMax / totalPoints / 2);
 
 
-                //uvs[idx].Set((float)idx / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
-                //uvs[idx+1].Set((float)(idx + 1) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
-                //uvs[idx+2].Set((float)(idx + 2) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
-                //uvs[idx+3].Set((float)(idx + 3) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+                uvs[idx].Set((vXMin - pointXMin) / pointXRange, (vYMin - pointYMin) / pointYRange);
+                uvs[idx + 1].Set((vXMin - pointXMin) / pointXRange, (vYMax - pointYMin) / pointYRange);
+                uvs[idx + 2].Set((vXMax - pointXMin) / pointXRange, (vYMin - pointYMin) / pointYRange);
+                uvs[idx + 3].Set((vXMax - pointXMin) / pointXRange, (vYMax - pointYMin) / pointYRange);
+
+                if (vXMin - pointXMin < 1)
+                {
+                    Debug.Log("hmm");
+                }
+
+                if (vYMin - pointYMin < 1)
+                {
+                    Debug.Log("HMM");
+                }
+
+                //uvs[idx].Set(vXMin / totalPoints / 2, vYMin / totalPoints / 2);
+                //uvs[idx + 1].Set(vXMin / totalPoints / 2, vYMax / totalPoints / 2);
+                //uvs[idx + 2].Set(vXMax / totalPoints / 2, vYMin / totalPoints / 2);
+                //uvs[idx + 3].Set(vXMax / totalPoints / 2, vYMax / totalPoints / 2);
+
 
                 idx += 4;
 
             }
         }
-        
+
+
+
 
         mesh.vertices = vertices;
         mesh.triangles = triangles;
+        mesh.uv = uvs;
         mesh.RecalculateNormals();
-        //mesh.uv = uvs;
-        
+
+        // calculate the normalized uv
+
+        // take point and shift x and y up by the mins
+        // normalization = (x - xmin) / (xmax - xmin)
+        // 
+
+        //for (int idx = 0; idx < vertices.Length;)
+        //{
+
+        //    float xMinNorm = vertices[idx].x;
+
+        //    uvs[idx].Set((float)idx / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+        //    uvs[idx+1].Set((float)(idx + 1) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+        //    uvs[idx+2].Set((float)(idx + 2) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+        //    uvs[idx+3].Set((float)(idx + 3) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+
+        //    idx += 4;
+        //}
+
+
+
 
 
 
     }
+
 
 }
 

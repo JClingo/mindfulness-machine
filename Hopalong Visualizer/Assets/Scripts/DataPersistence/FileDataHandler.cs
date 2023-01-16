@@ -16,12 +16,12 @@ public class FileDataHandler
         this.dataFileName = dataFilename;
     }
 
-    public GameData Load(string profileId, bool allowRestoreFromBackup = true)
+    public ExperimentData Load(string profileId, bool allowRestoreFromBackup = true)
     {
         if (profileId == null) { return null; }
 
         string fullPath = Path.Combine(dataDirPath, profileId, dataFileName);
-        GameData loadedData = null;
+        ExperimentData loadedData = null;
         if (File.Exists(fullPath))
         {
             try
@@ -35,7 +35,7 @@ public class FileDataHandler
                     }
                 }
 
-                loadedData = JsonUtility.FromJson<GameData>(dataToLoad);
+                loadedData = JsonUtility.FromJson<ExperimentData>(dataToLoad);
             }
             catch (Exception e)
             {
@@ -59,7 +59,7 @@ public class FileDataHandler
 
     }
 
-    public void Save(GameData data, string profileId)
+    public void Save(ExperimentData data, string profileId)
     {
         if (profileId == null) return;
 
@@ -78,9 +78,9 @@ public class FileDataHandler
                 }
             }
 
-            GameData verifiedGameData = Load(profileId);
+            ExperimentData verifiedExperimentData = Load(profileId);
 
-            if (verifiedGameData != null)
+            if (verifiedExperimentData != null)
             {
                 File.Copy(fullPath, backupFilePath, true);
             }
@@ -118,9 +118,9 @@ public class FileDataHandler
     }
 
 
-    public Dictionary<string, GameData> LoadAllProfiles()
+    public Dictionary<string, ExperimentData> LoadAllProfiles()
     {
-        Dictionary<string, GameData> profileDictionary = new Dictionary<string, GameData>();
+        Dictionary<string, ExperimentData> profileDictionary = new Dictionary<string, ExperimentData>();
 
         IEnumerable<DirectoryInfo> dirInfos = new DirectoryInfo(dataDirPath).EnumerateDirectories();
         foreach(DirectoryInfo dirInfo in dirInfos)
@@ -133,7 +133,7 @@ public class FileDataHandler
                 continue;
             }
 
-            GameData profileData = Load(profileId);
+            ExperimentData profileData = Load(profileId);
             if (profileData != null)
             {
                 profileDictionary.Add(profileId, profileData);
@@ -150,19 +150,19 @@ public class FileDataHandler
     public string GetMostRecentlyUpdatedProfileId()
     {
         string mostRecentProfileId = null;
-        Dictionary<string, GameData> profilesGameData = LoadAllProfiles();
-        foreach(KeyValuePair<string, GameData> pair in profilesGameData)
+        Dictionary<string, ExperimentData> profilesExperimentData = LoadAllProfiles();
+        foreach(KeyValuePair<string, ExperimentData> pair in profilesExperimentData)
         {
             string profileId = pair.Key;
-            GameData gameData = pair.Value;
+            ExperimentData experimentData = pair.Value;
 
-            if (gameData == null) continue;
+            if (experimentData == null) continue;
 
             if (mostRecentProfileId == null) continue;
             else
             {
-                DateTime mostRecentDateTime = DateTime.FromBinary(profilesGameData[mostRecentProfileId].lastUpdated);
-                DateTime newDateTime = DateTime.FromBinary(gameData.lastUpdated);
+                DateTime mostRecentDateTime = DateTime.FromBinary(profilesExperimentData[mostRecentProfileId].lastUpdated);
+                DateTime newDateTime = DateTime.FromBinary(experimentData.lastUpdated);
                 if (newDateTime > mostRecentDateTime)
                 {
                     mostRecentProfileId = profileId;
