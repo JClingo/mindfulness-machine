@@ -90,9 +90,7 @@ public class Navigator : MonoBehaviour
 
             for (int j = 0; j < numPointsOrbit; j++)
             {
-
-                
-                
+        
                 // iteration formula from Barry Martin
                 z = holographVertices.d + Mathf.Sqrt(Mathf.Abs(holographVertices.b * x - holographVertices.c));
                 if (x > 0) x1 = y - z;
@@ -102,14 +100,17 @@ public class Navigator : MonoBehaviour
                 y = holographVertices.a - x;
                 x = x1 + holographVertices.e;
 
-                pointIdx = j + i * numPointsOrbit;
-                holographVertices.points[pointIdx].Set(x, y);
+                
 
                 if (x < xMin) xMin = x;
                 else if (x > xMax) xMax = x;
 
                 if (y < yMin) yMin = y;
                 else if (y > yMax) yMax = y;
+
+                pointIdx = j + i * numPointsOrbit;
+                holographVertices.points[pointIdx].Set(x, y);
+
 
             }
 

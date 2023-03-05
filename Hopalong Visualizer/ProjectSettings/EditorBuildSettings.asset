@@ -11,9 +11,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/MovementSandbox.unity
     guid: 16baf3a17707a584c828aeb974b5bbf6
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Factory.unity
     guid: f6193850af068bf438850e15716020b0
+  - enabled: 1
+    path: Assets/Scenes/Factory-fix.unity
+    guid: ae0e9cd6c5ebae34caba8720c0e3616c
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260,
       type: 2}
