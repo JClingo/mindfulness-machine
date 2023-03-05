@@ -15,7 +15,7 @@ public class Navigator : MonoBehaviour
 
     public int seed;
 
-    public int numPointsSubset;
+    public int numPointsOrbit;
 
     private Vector3[] vertices;
     private int[] triangles;
@@ -29,13 +29,13 @@ public class Navigator : MonoBehaviour
     {
         Random.InitState(seed);
         // create holograph mesh (of several hopalong orbits)
-        totalPoints = GLOBALS.NUM_SUBSETS * numPointsSubset;
+        totalPoints = GLOBALS.NUM_ORBITS * numPointsOrbit;
         vertices = new Vector3[totalPoints * 4]; // 4 vertices per point
         triangles = new int[(int)(totalPoints * 6)]; // 6 triangles per point
         uvs = new Vector2[totalPoints * 4];
         mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-        holographVertices = new HolographVertices(seed, numPointsSubset);
+        holographVertices = new HolographVertices(seed, numPointsOrbit);
         UpdateHolographMesh();
         // generate color field
 
@@ -75,22 +75,24 @@ public class Navigator : MonoBehaviour
 
     void UpdateHolographMesh()
     {
-        holographVertices.UpdateSubsets(seed, numPointsSubset);
+        holographVertices.RandomizeParams(seed);
 
         Random.InitState(seed);
 
+        int pointIdx;
         float x, y, z, x1;
         float xMin = 0f, xMax = 0f, yMin = 0f, yMax = 0f;
 
-        for (int i = 0; i < GLOBALS.NUM_SUBSETS; i++)
+        for (int i = 0; i < GLOBALS.NUM_ORBITS; i++)
         {
             x = i * 0.005f * (0.5f - Random.value);
             y = i * 0.005f * (0.5f - Random.value);
 
-            for (int j = 0; j < numPointsSubset; j++)
+            for (int j = 0; j < numPointsOrbit; j++)
             {
 
-                Subset subset = holographVertices.subsets[i, j];
+                
+                
                 // iteration formula from Barry Martin
                 z = holographVertices.d + Mathf.Sqrt(Mathf.Abs(holographVertices.b * x - holographVertices.c));
                 if (x > 0) x1 = y - z;
@@ -100,8 +102,8 @@ public class Navigator : MonoBehaviour
                 y = holographVertices.a - x;
                 x = x1 + holographVertices.e;
 
-                subset.x = x;
-                subset.y = y;
+                pointIdx = j + i * numPointsOrbit;
+                holographVertices.points[pointIdx].Set(x, y);
 
                 if (x < xMin) xMin = x;
                 else if (x > xMax) xMax = x;
@@ -130,13 +132,14 @@ public class Navigator : MonoBehaviour
 
 
         // calculate range (for normalization)
-        for (int subsetIdx = 0; subsetIdx < GLOBALS.NUM_SUBSETS; subsetIdx++)
+        for (int i = 0; i < GLOBALS.NUM_ORBITS; i++)
         {
-            for (int pointIdx = 0; pointIdx < numPointsSubset; pointIdx++)
+            for (int j = 0; j < numPointsOrbit; j++)
             {
-                Subset subset = holographVertices.subsets[subsetIdx, pointIdx];
-                float pointX = (scaleX * (subset.x - xMin)) - GLOBALS.SCALE_FACTOR;
-                float pointY = (scaleY * (subset.y - yMin)) - GLOBALS.SCALE_FACTOR;
+                pointIdx = j + i * numPointsOrbit;
+
+                float pointX = (scaleX * (holographVertices.points[pointIdx].x - xMin)) - GLOBALS.SCALE_FACTOR;
+                float pointY = (scaleY * (holographVertices.points[pointIdx].y - yMin)) - GLOBALS.SCALE_FACTOR;
 
                 float vXMin = pointX - GLOBALS.POINT_SIZE;
                 float vXMax = pointX + GLOBALS.POINT_SIZE;
@@ -158,15 +161,17 @@ public class Navigator : MonoBehaviour
         // each "point" is a quad, centered around a single point
         // 
         // idx == vertex index
-        for (int idx = 0, subsetIdx = 0; subsetIdx < GLOBALS.NUM_SUBSETS; subsetIdx++)
+        for (int idx = 0, i = 0; i < GLOBALS.NUM_ORBITS; i++)
         {
-            for (int pointIdx = 0; pointIdx < numPointsSubset; pointIdx++)
+            for (int j = 0; j < numPointsOrbit; j++)
             {
 
-                Subset subset = holographVertices.subsets[subsetIdx, pointIdx];
-                float pointX = (scaleX * (subset.x - xMin)) - GLOBALS.SCALE_FACTOR;
-                float pointY = (scaleY * (subset.y - yMin)) - GLOBALS.SCALE_FACTOR;
-                float pointZ = subset.vertex.z;
+                pointIdx = j + i * numPointsOrbit;
+
+
+                float pointX = (scaleX * (holographVertices.points[pointIdx].x - xMin)) - GLOBALS.SCALE_FACTOR;
+                float pointY = (scaleY * (holographVertices.points[pointIdx].y - yMin)) - GLOBALS.SCALE_FACTOR;
+                float pointZ = 0; // orbits are all flat
 
                 float vXMin = pointX - GLOBALS.POINT_SIZE;
                 float vXMax = pointX + GLOBALS.POINT_SIZE;
@@ -236,10 +241,10 @@ public class Navigator : MonoBehaviour
 
         //    float xMinNorm = vertices[idx].x;
 
-        //    uvs[idx].Set((float)idx / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
-        //    uvs[idx+1].Set((float)(idx + 1) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
-        //    uvs[idx+2].Set((float)(idx + 2) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
-        //    uvs[idx+3].Set((float)(idx + 3) / totalPoints / 2, (float)subsetIdx / totalPoints / 2);
+        //    uvs[idx].Set((float)idx / totalPoints / 2, (float)orbitIdx / totalPoints / 2);
+        //    uvs[idx+1].Set((float)(idx + 1) / totalPoints / 2, (float)orbitIdx / totalPoints / 2);
+        //    uvs[idx+2].Set((float)(idx + 2) / totalPoints / 2, (float)orbitIdx / totalPoints / 2);
+        //    uvs[idx+3].Set((float)(idx + 3) / totalPoints / 2, (float)orbitIdx / totalPoints / 2);
 
         //    idx += 4;
         //}
@@ -257,7 +262,7 @@ public class Navigator : MonoBehaviour
 public static class GLOBALS
 {
     public const int NUM_LEVELS = 16;
-    public const int NUM_SUBSETS = 12;
+    public const int NUM_ORBITS = 12;
     
     public const int SCALE_FACTOR = 600;
     public const int CAMERA_BOUND = 2000;
@@ -280,27 +285,27 @@ public class HolographVertices
     public const float E_MAX = 12f;
 
     public float a, b, c, d, e;
-    //public Vector3[,] subsets;
+    //public Vector3[,] orbits;
 
-    public Subset[,] subsets;
+    public Vector2[] points;
 
     public float xMin, xMax, yMin, yMax;
 
 
-    public HolographVertices(int seed, int numPointsSubset)
+    public HolographVertices(int seed, int numPointsOrbit)
     {
-        subsets = new Subset[GLOBALS.NUM_SUBSETS, numPointsSubset];
-        for (int i = 0; i < GLOBALS.NUM_SUBSETS; i++)
+        points = new Vector2[GLOBALS.NUM_ORBITS * numPointsOrbit];
+        for (int i = 0; i < GLOBALS.NUM_ORBITS; i++)
         {
-            for (int j = 0; j < numPointsSubset; j++)
+            for (int j = 0; j < numPointsOrbit; j++)
             {
-                subsets[i, j] = new Subset();
+                points[j + i * numPointsOrbit] = new Vector2();
             }
         }
-        UpdateSubsets(seed, numPointsSubset);
+        RandomizeParams(seed);
     }
 
-    public void UpdateSubsets(int seed, int numPointsSubset)
+    public void RandomizeParams(int seed)
     {
         Random.InitState(seed);
         a = Random.Range(0, 100000) * (A_MAX - A_MIN);
@@ -309,28 +314,7 @@ public class HolographVertices
         d = Random.Range(0, 100000) * (D_MAX - D_MIN);
         e = Random.Range(0, 100000) * (E_MAX - E_MIN);
         
-        //for (int i = 0; i < GLOBALS.NUM_SUBSETS; i++)
-        //{
-        //    for (int j = 0; j < numPointsSubset; j++)
-        //    {
-        //        subsets[i, j] = new Subset();
-        //    }
-        //}
     }
 
-    
-}
-
-public class Subset
-{
-    public Vector3 vertex;
-    public float x;
-    public float y;
-
-
-    public Subset()
-    {
-
-    }
     
 }
