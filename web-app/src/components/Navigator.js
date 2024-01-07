@@ -308,7 +308,7 @@ export function Navigator() {
 
         
 
-        setInterval(updateScene, 4000);
+        setInterval(updateScene, SCENE.NEW_ORBIT_INTERVAL);
 
     }
 
@@ -349,6 +349,7 @@ export function Navigator() {
                 }
             }
         }
+        console.log('points updated', Date.now(), points);
     }
 
     function buildController(data) {
@@ -675,28 +676,28 @@ export function Navigator() {
     }
 
     const onKeyPress = (event) => {
-        // handle 'f'
-        // if (event.which === 70 || event.which === 102) {
-        //     //if (vrEnabled || isFullscreen) {
-        //     if (isFullscreen) {
-        //         exitFullscreen();
-        //         // } else if (vrSupported) {
-        //         //   if (canvasEl.current.mozRequestFullScreen) {
-        //         //     canvasEl.current.mozRequestFullScreen({
-        //         //       vrDisplay: vrHMD
-        //         //     });
-        //         //   } else if (canvasEl.current.webkitRequestFullscreen) {
-        //         //     canvasEl.current.webkitRequestFullscreen({
-        //         //       vrDisplay: vrHMD,
-        //         //     });
-        //         //   }
-        //     } else {
-        //         launchIntoFullscreen(canvasEl.current);
-        //     }
-        //     // } else if (vrEnabled && (event.which === 82 || event.which === 114)) {
-        //     //   // handle 'z'
-        //     //   vrHMDSensor.zeroSensor();
-        // }
+        //handle 'f'
+        if (event.which === 70 || event.which === 102) {
+            //if (vrEnabled || isFullscreen) {
+            if (isFullscreen) {
+                exitFullscreen();
+                // } else if (vrSupported) {
+                //   if (canvasEl.current.mozRequestFullScreen) {
+                //     canvasEl.current.mozRequestFullScreen({
+                //       vrDisplay: vrHMD
+                //     });
+                //   } else if (canvasEl.current.webkitRequestFullscreen) {
+                //     canvasEl.current.webkitRequestFullscreen({
+                //       vrDisplay: vrHMD,
+                //     });
+                //   }
+            } else {
+                launchIntoFullscreen(canvasEl.current);
+            }
+            // } else if (vrEnabled && (event.which === 82 || event.which === 114)) {
+            //   // handle 'z'
+            //   vrHMDSensor.zeroSensor();
+        }
     }
     ///
 
@@ -704,7 +705,7 @@ export function Navigator() {
         <div className="Navigator">
             <canvas ref={canvasEl}></canvas>
             {experiment.settings.isVR && <VRButton setVRSession={onSetVRSession} endVRSession={onEndVRSession}></VRButton>}
-            <Logger/>
+            {experiment.settings.shouldLog && <Logger/>}
         </div>
     );
 }

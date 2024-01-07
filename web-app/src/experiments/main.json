@@ -4,11 +4,12 @@
     "title": "mm1",
     "surveyUrl": "https://ucmerced.az1.qualtrics.com/jfe/form/SV_eD5GOq47o1WqPhc",
     "settings": {
+        "shouldLog": true,
         "shouldJitter": false,
         "shouldVarySpeed": false,
         "isVR": false,
         "startingSeed": 1153,
-        "mousePixelThreshold": 1000,
+        "mousePixelThreshold": 500,
         "arrowThreshold": 50,
         "textureSrc": "spiral-galaxy.svg",
         "SCENE": {
@@ -22,7 +23,8 @@
             "NUM_LEVELS": 10,
             "LEVEL_DEPTH": 400,                        
             "DEF_BRIGHTNESS": 0.5,
-            "DEF_SATURATION": 1
+            "DEF_SATURATION": 1,
+            "NEW_ORBIT_INTERVAL": 4000
         },
         "ORBIT": {
             "A_MIN": -30,

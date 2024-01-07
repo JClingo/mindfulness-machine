@@ -1,5 +1,5 @@
 ---
-title: "First-year analysis"
+title: "Online MLQ analysis"
 author: "Joshua Clingo"
 date: "5/27/2021"
 output:
@@ -14,12 +14,10 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo=TRUE)
 
 ```{r setup, include=FALSE}
 library(tidyverse)
-library(lme4)
-library(car)
+# library(lme4)
 library(lsr)
 library(corrplot)
 library(ggeffects)
-library(brms)
 options(mc.cores = parallel::detectCores())
 theme_set(theme_classic()) 
 set.seed(123)
@@ -34,40 +32,180 @@ set.seed(123)
 
 # read in data
 
-df = readRDS("../../data/conjunction-teacher.rds")
+filename = file.choose()
+df = readRDS(filename)
 
-df_believer = df %>% 
-  filter(IsBelieverCondition == 1)
-df_nonbeliever = df %>% 
-  filter(IsBelieverCondition == 0)
+df_mlq = df %>% 
+  filter(!is.na(MLQ_1)) %>% 
+  select (., -(AWE_1:AWE_DO), -AWE, -AWE_Time, -AWE_SelfLoss, -AWE_Connectedness) 
 
-```
-
-```{r}
-dftest = df_believer %>% 
-  filter(as.numeric(as.character(IsCorrect)) == 0)
-```
-
-
-```{r}
-
-p = df %>%
-  mutate (Correct = if_else(as.numeric(as.character(IsCorrect)) == 1, "True", "False")) %>% 
-  ggplot() + 
-  geom_bar(aes(x=Correct, fill=factor(Correct))) + 
-  facet_wrap(~IsBelieverCondition, labeller = as_labeller(c("0" = "Group A", "1" = "Group B" ))) +
-  scale_fill_manual(values = c("False" = "#f44336",
-                               "True" = "#4CAF50")) +
-  labs(x = "", 
-       y = "Count", 
-       title="Correct vs Incorrect response", 
-       subtitle = "(correct if chose 'This woman is a teacher')") + 
-  theme(legend.position = "none")
+df_awe = df %>% 
+  filter(!is.na(AWE_1)) %>% 
+  select (., -(MLQ_1:MLQ_DO), -MLQ, -MLQ_Presence, -MLQ_Search)
 
 ```
 
 ```{r}
-ggsave(p, file="Correct vs Incorrect.png", width=4, height=4)
+
+regressor = lm(formula = MLQ ~ Condition + IsFemale + Age + ReligiousScale + HasTakenPsychedelic, data = df_mlq)
+summary(regressor)
+
+```
+
+```{r}
+
+regressor = lm(formula = AWE ~ Condition + IsFemale + Age + ReligiousScale + HasTakenPsychedelic, data = df_awe)
+summary(regressor)
+
+```
+
+
+```{r}
+
+boxplot(MLQ~Condition,data=df_mlq, main="MLQ Per Condition",
+   xlab="Condition", ylab="MLQ")
+
+boxplot(MLQ_Presence~Condition,data=df_mlq, main="MLQ Presence Per Condition",
+   xlab="Condition", ylab="MLQ")
+
+boxplot(MLQ_Search~Condition,data=df_mlq, main="MLQ Search Per Condition",
+   xlab="Condition", ylab="MLQ")
+
+```
+
+```{r}
+
+df_mlq_not_bad = df_mlq %>%
+  filter(ParticipantID != 145317216, 
+         ParticipantID != 150787919,
+         ParticipantID != 104528162,
+         ParticipantID != 121475818,
+         ParticipantID != 119803467,
+         ParticipantID != 150693715,
+         ParticipantID != 136011243,
+         ParticipantID != 151831974,
+         ParticipantID != 192762097
+         )
+
+boxplot(MLQ~Condition,data=df_mlq_not_bad, main="MLQ Per Condition",
+   xlab="Condition", ylab="MLQ")
+
+boxplot(MLQ_Presence~Condition,data=df_mlq_not_bad, main="MLQ Presence Per Condition",
+   xlab="Condition", ylab="MLQ")
+
+boxplot(MLQ_Search~Condition,data=df_mlq_not_bad, main="MLQ Search Per Condition",
+   xlab="Condition", ylab="MLQ")
+
+```
+
+```{r echo=FALSE}
+
+df_mlq_main = df_mlq %>%
+  filter(Condition == 0)
+
+df_mlq_control = df_mlq %>%
+  filter(Condition == 1)
+
+df_mlq_baseline = df_mlq %>%
+  filter(Condition == 2)
+
+
+```
+
+
+```{r echo=FALSE}
+
+df_awe_main = df_awe %>%
+  filter(Condition == 0)
+
+df_awe_control = df_awe %>%
+  filter(Condition == 1)
+
+boxplot(AWE~Condition,data=df_awe, main="AWE-S Per Condition",
+   xlab="Condition", ylab="AWE-S")
+
+boxplot(AWE_Time~Condition,data=df_awe, main="AWE-S Per Condition",
+   xlab="Condition", ylab="AWE-S")
+
+boxplot(AWE_SelfLoss~Condition,data=df_awe, main="AWE-S Per Condition",
+   xlab="Condition", ylab="AWE-S")
+
+boxplot(AWE_Connectedness~Condition,data=df_awe, main="AWE-S Per Condition",
+   xlab="Condition", ylab="AWE-S")
+
+
+
+```
+
+
+
+```{r echo=FALSE}
+
+df_awe_not_bad = df_awe %>%
+  filter(ParticipantID != 145317216, 
+         ParticipantID != 150787919,
+         ParticipantID != 104528162,
+         ParticipantID != 121475818,
+         ParticipantID != 119803467,
+         ParticipantID != 150693715,
+         ParticipantID != 136011243,
+         ParticipantID != 151831974,
+         ParticipantID != 192762097
+         )
+
+df_awe_main = df_awe_not_bad %>%
+  filter(Condition == 0)
+
+df_awe_control = df_awe_not_bad %>%
+  filter(Condition == 1)
+
+boxplot(AWE~Condition,data=df_awe_not_bad, main="AWE-S",
+   xlab="Condition", ylab="AWE-S")
+
+boxplot(AWE_Time~Condition,data=df_awe_not_bad, main="AWE-S - Time",
+   xlab="Condition", ylab="AWE-S")
+
+boxplot(AWE_SelfLoss~Condition,data=df_awe_not_bad, main="AWE-S - Loss of Self",
+   xlab="Condition", ylab="AWE-S")
+
+boxplot(AWE_Connectedness~Condition,data=df_awe_not_bad, main="AWE-S - Connectedness",
+   xlab="Condition", ylab="AWE-S")
+
+
+
+```
+
+
+
+```{r echo=FALSE}
+
+# I understand my life's meaning
+mean(df_mlq_main$MLQ_1)
+mean(df_mlq_control$MLQ_1)
+mean(df_mlq_baseline$MLQ_1)
+
+# I am looking for something that makes my life feel meaningful
+mean(df_mlq_main$MLQ_2)
+mean(df_mlq_control$MLQ_2)
+mean(df_mlq_baseline$MLQ_2)
+
+# I am always looking to find my life's purpose
+mean(df_mlq_main$MLQ_3)
+mean(df_mlq_control$MLQ_3)
+mean(df_mlq_baseline$MLQ_3)
+
+# My life has a clear sense of purpose
+mean(df_mlq_main$MLQ_4)
+mean(df_mlq_control$MLQ_4)
+mean(df_mlq_baseline$MLQ_4)
+
+# I have a good sense of what makes my life meaningful
+mean(df_mlq_main$MLQ_5)
+mean(df_mlq_control$MLQ_5)
+mean(df_mlq_baseline$MLQ_5)
+
+
+
 ```
 
 
@@ -155,18 +293,6 @@ corrplot(cor(df_correlations), p.mat = res1$p, insig = "label_sig",
          sig.level = c(.001, .01, .05), pch.cex = .9, pch.col = "white")
 ```
 
-Here we get a strongly significant correlation between getting the belief condition and the likelihood of the respondent getting the correct answer (non-conjunct). This is unsurprising to our hypotheses. We expected the error rate to be far higher in the belief condition. We also see that MEQ_Score and ReligiousScale (self-rated belief in the existence of God or gods) are connected. And most intriguingly for our hypotheses, we see that there's a strong-to-modestly significant (p < 0.001; p < 0.01) effect of both MEQ Score and ReligiousScale, leading us to suspect that the most religious *and/or* mystical are especially susceptible to the conjunction effect here.
-
-The next step was to pull our datasets apart to see whether these results hold when treating the response groups independently.
-
-*** 
-
-### Believer condition correlation matrix (95% conf. interval)
-
-\**** = 0.001 significance
-** = 0.01 significance
-* = 0.05 significance
-
 ```{r echo=FALSE ,out.width="50%"}
 df_correlations = df_believer %>% 
   select(IsCorrect, MEQ_Score, ReligiousScale, `Duration (in seconds)`, IsFemale, Education, Psychedelic)
@@ -177,18 +303,6 @@ corrplot(cor(df_correlations), p.mat = res1$p, insig = "label_sig",
          sig.level = c(.001, .01, .05), pch.cex = .9, pch.col = "white")
 ```
 
-In the believer condition, we get a very interesting result--A strong (p < 0.001) negative correlation between belief in God(/MEQ Score) and the probability that
-they got the right answer. It certainly looks like a classic conjunction effect (implicit association between eudaemonia and belief) from this level.
-
-The real test will be the non-believer condition. Are religious people less likely to commit the error like we thought? 
-
-***
-
-### Non-believer condition correlation matrix (95% conf. interval)
-
-\**** = 0.001 significance
-** = 0.01 significance
-* = 0.05 significance
 
 ```{r echo=FALSE, out.width="50%"}
 df_correlations = df_nonbeliever %>% 
@@ -199,20 +313,6 @@ res1 <- cor.mtest(df_correlations, conf.level = .95)
 corrplot(cor(df_correlations), p.mat = res1$p, insig = "label_sig",
          sig.level = c(.001, .01, .05), pch.cex = .9, pch.col = "white")
 ```
-
-No--we get just a weak effect here between MEQ Score and whether they got the 
-correct answer. This is slightly surprising but our surprise goes down when we see
-the actual numbers we're dealing with.
-
-
-
-
-This plot has several things going on but should be intuitive with guidance. We've split the data into two charts,
-with the believer condition on the right and the non-believer condition on the left. Their self-reported belief in God/gods is the x-axis
-and their combined MEQ score is the y-axis. The red line shows the linear fit between those axes in either condition (as expected).
-Then we have two colors of circles, each of which represents a respondent. If the circle is cyan, they got the answer right (chose the non-conjunct). If the circle is light red, they chose the conjunct. 
-
-You can probably notice that in the religious condition on the right, there's a clustering of wrong answers up to right (higher belief in God), though the wrong answers appear on either end of the MEQ. On the non-religious condition, you'll notice the clustering of wrong answers up and to the right. You'll also notice there are far fewer wrong answers. Conveniently, this is what we predicted. Less conveniently, this means we don't have that many wrong answers in the non-religious condition and therefore are hard-pressed to have any confidence about other predictors (like belief in God/gods). 
 
 ```{r echo=FALSE, out.width="50%"}
 df %>% 
@@ -228,12 +328,6 @@ df %>%
 
 ```
 
-We see the same idea here, where our error bars are just too big in the non-believer condition. 
-However, this is still good for our hypotheses overall. We were expecting the believer condition
-to have a big gap in the middle of believers and nonbelievers and for the direction to be that way. We
-were also expecting the gap to narrow or disappear in the non-believer condition.
-
-Now that we've visualized our main results, let's do a bit of modeling. 
 
 ## Modeling
 
@@ -418,109 +512,4 @@ ggsave(p4, file="Religiosity vs Responses.png", width=8, height=4)
 ```{r}
 mean(df$ReligiousScale)
 ```
-
-
-## Bayesian Analysis
-
-```{r}
-
-
-prior_believer = get_prior(IsCorrect ~ 0 + ReligiousScale, data = df_believer, family  = gaussian())
-
-priors_believer = c(prior(normal(0, 100), class = b),
-                    prior(normal(0,50), class = sigma))
-
-brm_believer <- brm(IsCorrect ~ 0 + ReligiousScale,
-  data = df_believer,
-  family  = gaussian(),
-  prior = priors_believer,
-  chains = 4,
-  cores = 4,
-  seed = 10,
-  iter = 2000,
-  file = "analysis_test")
-
-summary(brm_believer)
-
-```
-
-```{r}
-
-
-prior_nonbeliever = get_prior(IsCorrect ~ 0 + ReligiousScale, data = df_nonbeliever, family  = gaussian())
-
-priors_nonbeliever = c(prior(normal(0, 100), class = b),
-                    prior(normal(0,50), class = sigma))
-
-brm_nonbeliever <- brm(IsCorrect ~ 0 + ReligiousScale,
-  data = df_nonbeliever,
-  family  = gaussian(),
-  prior = priors_nonbeliever,
-  chains = 4,
-  cores = 4,
-  seed = 10,
-  iter = 2000,
-  file = "analysis_test")
-
-summary(brm_nonbeliever)
-
-```
-
-```{r}
-
-
-prior_combined = get_prior(IsCorrect ~ 1 + IsBelieverCondition + (IsBelieverCondition|ReligiousScale), data = df, family = bernoulli(link = "logit"))
-
-priors_combined = c(prior(normal(0, 100), class = b))
-
-brm_combined <- brm(IsCorrect ~ 1 + IsBelieverCondition + (IsBelieverCondition|ReligiousScale),
-  data = df,
-  family = bernoulli(link = "logit"),
-  prior = priors_combined,
-  chains = 4,
-  cores = 4,
-  seed = 10,
-  iter = 2000,
-  file = "analysis_test")
-
-summary(brm_combined)
-
-```
-
-
-
-
-
-```{r}
-
-#prior = get_prior(IsCorrect ~ 1 + IsBelieverCondition + (IsBelieverCondition|ReligiousScale), data = df, family = bernoulli(link="logit"))
-# prior1 = get_prior(IsCorrect ~ 0 + IsBelieverCondition + (1 + IsBelieverCondition|ReligiousScale), data = df, family = bernoulli(link="logit"))
-# 
-# 
-# priors = c(prior(normal(0, 1), class = Intercept),
-#             prior(normal(0, 0.5), class = b))
-# 
-# 
-# # brm1 <- brm(IsCorrect ~ 1 + IsBelieverCondition + (1 + IsBelieverCondition|ReligiousScale), 
-# 
-# #brm1 <- brm(IsCorrect ~ 1 + IsBelieverCondition + #(IsBelieverCondition|ReligiousScale) + (IsBelieverCondition|MEQ_Score),
-# brm1 <- brm(IsCorrect ~ 0 + IsBelieverCondition + (1 + IsBelieverCondition|ReligiousScale) + (1 + IsBelieverCondition|MEQ_Score)
-#   data = df,
-#   family = bernoulli(link = "logit"),
-#   prior = prior(normal(0, 1), class = b),
-#   chains = 4,
-#   cores = 4,
-#   seed = 10,
-#   iter = 2000,
-#   file = "analysis_test")
-# 
-# 
-# bmod <-brm( pulled_left ~ 0 + factor(actor) + condition*prosoc_left,
-#             data = chimp_data, family = bernoulli(link = "logit"),
-#             prior = prior(normal(0, 10), class = b),
-#             cores = 4, chains = 4, iter=2000,
-#             seed = 10, file = "wk9_bmod")
-
-```
-
 

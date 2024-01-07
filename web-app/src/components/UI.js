@@ -88,14 +88,19 @@ export function UI({progress = -1}) {
         {!completed && <>
             <div className="display">{parse(display)}</div>
             { progress >= 0 && <div className="progress">{progress}%</div> }
-            {showControls && <div className="controls">
-                <div></div>
-                <div className={`key ${activeKeys[38] ? 'active' : ''}`}>↑</div>
-                <div></div>
-                <div className={`key ${activeKeys[37] ? 'active' : ''}`}>←</div>
-                <div className={`key ${activeKeys[40] ? 'active' : ''}`}>↓</div>
-                <div className={`key ${activeKeys[39] ? 'active' : ''}`}>→</div>
-            </div>}
+            {showControls && 
+            <div className="controls-container">
+                <div className="fullscreen"></div>
+                <div className="controls">
+                    <div></div>
+                    <div className={`key ${activeKeys[38] ? 'active' : ''}`}>↑</div>
+                    <div></div>
+                    <div className={`key ${activeKeys[37] ? 'active' : ''}`}>←</div>
+                    <div className={`key ${activeKeys[40] ? 'active' : ''}`}>↓</div>
+                    <div className={`key ${activeKeys[39] ? 'active' : ''}`}>→</div>
+                </div>
+            </div>
+           }
         </>
         }
     </div>);

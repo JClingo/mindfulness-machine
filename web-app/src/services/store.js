@@ -8,8 +8,6 @@ import firebaseConfig from '../settings/firebase-config';
 
 
 const useStore = create(subscribeWithSelector(((set,get) => {
-
-
     const db = getFirestore(initializeApp(firebaseConfig));
     if (!db) { console.error('Could not create firestore--check connection?'); }
 
@@ -29,28 +27,12 @@ const useStore = create(subscribeWithSelector(((set,get) => {
 
     return {
         initializeExperiment: async (experiment, participantId) => {
-            // let id;
-            // if (db) {
-            //     const conditionRef = doc(db, "Settings", "Condition");
-            //     const conditionSnap = await getDoc(conditionRef);
-            //     const { id } = conditionSnap.data();
-            // } else {
-            //     id = '-1';
-            // }
-                 
-            // if (id === "main") {
-            //     experimentSrc = mainExperimentSrc;
-            //     //await setDoc(conditionRef, { id: "limited" });
-            // } else {
-            //     experimentSrc = limitedExperimentSrc;
-            //     //await setDoc(conditionRef, { id: "main" });
-            // }
             set({db: db});
             set({experiment: experiment});
             set({participantId: participantId});
             set({seed: experiment.settings.startingSeed})
             set({navigator: { speed: 0, rotationSpeed: 0, shouldReverse: false, canControl: false}})
-            await createLog(experiment, participantId);
+            if (experiment?.settings?.shouldLog) await createLog(experiment, participantId);
             set({initialized: true});
         },
         initialized: false,

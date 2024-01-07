@@ -1,14 +1,15 @@
 {
     "id": "main",
-    "description": "Browser-based pilot demo",
-    "title": "Hopalong Orbits Pilot - Demo",
-    "surveyUrl": "",
+    "description": "mm1",
+    "title": "mm1",
+    "surveyUrl": "https://ucmerced.az1.qualtrics.com/jfe/form/SV_eD5GOq47o1WqPhc",
     "settings": {
+        "shouldLog": false,
         "shouldJitter": false,
         "shouldVarySpeed": false,
         "isVR": false,
         "startingSeed": 1153,
-        "mousePixelThreshold": 1000,
+        "mousePixelThreshold": 500,
         "arrowThreshold": 50,
         "textureSrc": "spiral-galaxy.svg",
         "SCENE": {
@@ -22,7 +23,8 @@
             "NUM_LEVELS": 10,
             "LEVEL_DEPTH": 400,                        
             "DEF_BRIGHTNESS": 0.5,
-            "DEF_SATURATION": 1
+            "DEF_SATURATION": 1,
+            "NEW_ORBIT_INTERVAL": 4000
         },
         "ORBIT": {
             "A_MIN": -30,
@@ -39,7 +41,7 @@
 
     },
     "intro": {
-        "content": "This study explores experience and information. Please do not begin until you are in a quiet, undistracted environment. Access the study on a large display. Maximize your browser window as much as possible. The entire study should take about 15 minutes."
+        "content": "Access this on a large display, with access to keyboard arrow keys and a mouse/trackpad. Maximize your browser window as much as possible."
     },
     "steps": [
         {
@@ -56,47 +58,50 @@
                     "id": "training-intro-1",
                     "display": "Welcome to the experience",
                     "type": "TIMED",
-                    "duration": 3000
+                    "duration": 2500
                 },
                 {
                     "id": "training-intro-2",
                     "display": "Please take a few seconds to get used to the controls",
                     "type": "TIMED",
-                    "duration": 3000
+                    "duration": 2500
                 },
                 {
                     "id": "training-intro-3",
                     "display": "Use the <strong>up (↑)</strong> and <strong>down (↓)</strong> arrow keys to increase or decrease your speed",
                     "type": "INPUT",
                     "input": "SPEED",
-                    "delay": 1500
+                    "delay": 1000,
+                    "canSkip": true
                 },
                 {
                     "id": "training-intro-4",
                     "display": "Use the <strong>left (←)</strong> and <strong>right (→)</strong> arrow keys to change the rotation ",
                     "type": "INPUT",
                     "input": "ROTATION_SPEED",
-                    "delay": 1500
+                    "delay": 1000,
+                    "canSkip": true
                 },
                 {
                     "id": "training-intro-5",
                     "display": "Now, move your cursor around to control your trajectory<br/>",
                     "type": "INPUT",
                     "input": "MOUSE",
-                    "delay": 1500
+                    "delay": 1000,
+                    "canSkip": true
                 },
                 {
                     "id": "training-intro-6",
-                    "display": "Great! Relax and explore with these controls however you want<br>We'll let you know when you're done",
+                    "display": "Great! Relax, focus on the screen, and explore with these controls<br/>You may press the 'F' key to enter fullscreen",
                     "type": "TIMED",
-                    "duration": 5000
+                    "duration": 4000
                 }
             ]
         },
         {
             "id": "navigator",
             "type": "NAVIGATOR",
-            "duration": 10000000,
+            "duration": 9999999999,
             "settings": {
                 "speed": 1,
                 "rotationSpeed": -0.004,
@@ -108,8 +113,20 @@
                     "id": "navigator-1",
                     "display": "",
                     "type": "TIMED",
-                    "duration": 1000000000
-                }
+                    "duration": 480000
+                },
+                {
+                    "id": "navigator-2",
+                    "display": "Thank you for your participation.<br/>Next, take a few minutes to answer some questions",
+                    "type": "TIMED",
+                    "duration": 10000
+                },
+                {
+                    "id": "navigator-3",
+                    "display": "",
+                    "type": "TIMED",
+                    "duration": 0
+                } 
             ]
         }
     ]
