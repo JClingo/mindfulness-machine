@@ -7,6 +7,7 @@
         "shouldLog": true,
         "shouldJitter": true,
         "shouldVarySpeed": true,
+        "showControls": true,
         "isVR": false,
         "startingSeed": 1153,
         "mousePixelThreshold": 500,
@@ -41,7 +42,9 @@
 
     },
     "intro": {
-        "content": "This study explores experience and information. Please do not begin until you are in a quiet, undistracted environment. Access the study on a large display. Maximize your browser window as much as possible. The entire study should take about 15 minutes."
+        "content": "This study explores experience and information. Please do not begin until you are in a quiet, undistracted environment. Access the study on a large display. Maximize your browser window as much as possible. The entire study should take about 15 minutes.",
+        "shouldAllowAllDevices": false
+
     },
     "steps": [
         {

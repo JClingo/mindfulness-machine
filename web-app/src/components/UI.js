@@ -20,7 +20,7 @@ export function UI({progress = -1}) {
         40: false  // down
     });
     const [isCopied, setIsCopied] = useState(false);
-
+    
     useEffect(() => {
 
         const activeIdSubscriber = useStore.subscribe(state => state.activeId, (current, prev) => {

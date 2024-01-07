@@ -5,6 +5,7 @@ import { getNextStep, getNextSequence } from '../services/experiment';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, serverTimestamp, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore/lite';
 import firebaseConfig from '../settings/firebase-config';
+import { randomInt } from '../utilities/rng';
 
 
 const useStore = create(subscribeWithSelector(((set,get) => {
@@ -30,7 +31,7 @@ const useStore = create(subscribeWithSelector(((set,get) => {
             set({db: db});
             set({experiment: experiment});
             set({participantId: participantId});
-            set({seed: experiment.settings.startingSeed})
+            set({seed: experiment.settings.startingSeed ? experiment.settings.startingSeed : randomInt(0, 9999999)})
             set({navigator: { speed: 0, rotationSpeed: 0, shouldReverse: false, canControl: false}})
             if (experiment?.settings?.shouldLog) await createLog(experiment, participantId);
             set({initialized: true});

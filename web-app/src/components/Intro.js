@@ -14,7 +14,7 @@ export function Intro({ settings, complete }) {
 
     return (
         <div className="intro-container">
-            { passedDeviceCheck ?
+            { settings?.shouldAllowAllDevices || passedDeviceCheck ?
                 <>
                     <div className="screen">
                         Please expand your browser window to fullscreen!

@@ -50,6 +50,10 @@ export function Navigator() {
     const canvasEl = useRef(null);
     const interval = useRef(null);
 
+    // for two-point gestures (as in mobile hardware)
+    const eventCache = useRef([]);
+    const previousDifference = useRef(-1);
+
     let currentOrbit = useRef({
         // params
         a: 0,
@@ -127,6 +131,10 @@ export function Navigator() {
         document.removeEventListener('mousemove', onDocumentMouseMove);
         document.removeEventListener('touchstart', onDocumentTouchStart);
         document.removeEventListener('touchmove', onDocumentTouchMove);
+        // document.removeEventListener('pointerdown', onDocumentPointerDown);
+        // document.removeEventListener('pointermove', onDocumentPointerMove);
+        // document.removeEventListener('pointerup', onDocumentPointerUp);
+        // window.removeEventListener('gesturechange', onDocumentGestureChange);
         window.removeEventListener('keypress', onKeyPress);
         window.removeEventListener('keydown', onKeyDown);
         document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
@@ -140,8 +148,15 @@ export function Navigator() {
             document.addEventListener('mousemove', onDocumentMouseMove, false);
             document.addEventListener('touchstart', onDocumentTouchStart, false);
             document.addEventListener('touchmove', onDocumentTouchMove, false);
+            // document.addEventListener('pointerdown', onDocumentPointerDown, false);
+            // document.addEventListener('pointermove', onDocumentPointerMove, false);
+            // document.addEventListener('pointerup', onDocumentPointerUp, false);
+            // touchpad (on laptop)
+            // window.addEventListener('gesturechange', onDocumentGestureChange, false);
+            
             window.addEventListener('keypress', onKeyPress, false);
             window.addEventListener('keydown', onKeyDown, false);
+            
         }  
         document.addEventListener('webkitfullscreenchange', onFullscreenChange, false);
         document.addEventListener('mozfullscreenchange', onFullscreenChange, false);
@@ -349,7 +364,7 @@ export function Navigator() {
                 }
             }
         }
-        console.log('points updated', Date.now(), points);
+        //console.log('points updated', Date.now(), points);
     }
 
     function buildController(data) {
@@ -545,6 +560,74 @@ export function Navigator() {
     ///////////////////////////////////////////////
     // Event listeners
     ///////////////////////////////////////////////
+
+    const onDocumentPointerDown = (event) => {
+        console.log(event.type, event);
+        eventCache.current.push(event);
+    }
+
+    const onDocumentPointerMove = (event) => {
+        //console.log("pointer moved", event);
+        // Find this event in the cache and update its record with this event
+        const index = eventCache.current.findIndex(
+            (cachedEvent) => cachedEvent.pointerId === event.pointerId,
+        );
+        eventCache.current[index] = event;
+
+        // If two pointers are down, check for pinch gestures
+        if (eventCache.current.length === 2) {
+            console.log(`eventCache.length === ${eventCache.current.length}`, eventCache.current)
+            // Calculate the distance between the two pointers
+            const curDiff = Math.abs(eventCache.current[0].clientX - eventCache.current[1].clientX);
+
+            if (previousDifference.current > 0) {
+            if (curDiff > previousDifference.current) {
+                // The distance between the two pointers has increased
+                console.log("Pinch moving OUT -> Zoom in (should speed up)", event);
+                speed.current += 0.5;
+
+            }
+            if (curDiff < previousDifference.current) {
+                // The distance between the two pointers has decreased
+                console.log("Pinch moving IN -> Zoom out (should slow down", event);
+                // ev.target.style.background = "lightblue";
+                speed.current -= 0.5;
+            }
+            }
+
+            // Cache the distance for the next move event
+            previousDifference.current = curDiff;
+        }
+
+    }
+
+    const onDocumentPointerUp = (event) => {
+        console.log(event.type, event);
+        // Remove this pointer from the cache and reset the target's
+        // background and border
+        removeEvent(event);
+      
+        // If the number of pointers down is less than two then reset diff tracker
+        if (eventCache.current.length < 2) {
+            previousDifference.current = -1;
+        }
+      }
+    
+    function removeEvent(event) {
+        // Remove this event from the target's cache
+        const index = eventCache.current.findIndex(
+            (cachedEv) => cachedEv.pointerId === event.pointerId,
+        );
+        eventCache.current.splice(index, 1);
+        console.log(`removed index ${index}`, eventCache.current);
+    }
+
+    const onDocumentGestureChange = (event) => {
+        event.preventDefault();
+        console.log('scale event', event);
+        speed.current += event.scale;
+    }
+
     const onDocumentMouseMove = (event) => {
         cursorX = event.clientX - windowHalfX;
         cursorY = event.clientY - windowHalfY;
@@ -552,7 +635,7 @@ export function Navigator() {
 
     const onDocumentTouchStart = (event) => {
         if (event.touches.length === 1) {
-            event.preventDefault();
+            //event.preventDefault();
             cursorX = event.touches[0].pageX - windowHalfX;
             cursorY = event.touches[0].pageY - windowHalfY;
         }
@@ -560,7 +643,7 @@ export function Navigator() {
 
     const onDocumentTouchMove = (event) => {
         if (event.touches.length === 1) {
-            event.preventDefault();
+            //event.preventDefault();
             cursorX = event.touches[0].pageX - windowHalfX;
             cursorY = event.touches[0].pageY - windowHalfY;
         }
