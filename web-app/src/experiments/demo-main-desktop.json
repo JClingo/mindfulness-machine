@@ -77,14 +77,14 @@
                 },
                 {
                     "id": "training-intro-4",
-                    "display": "Use the <strong>left (←)</strong> and <strong>right (→)</strong> arrow keys to change the rotation ",
+                    "display": "Use the <strong>left (←)</strong> and <strong>right (→)</strong> arrow keys to adjust the rotation ",
                     "type": "INPUT",
                     "input": "ROTATION_SPEED",
                     "delay": 1000
                 },
                 {
                     "id": "training-intro-5",
-                    "display": "Now, move your cursor around to control your trajectory<br/>",
+                    "display": "Now, move your cursor around to adjust your trajectory<br/>",
                     "type": "INPUT",
                     "input": "MOUSE",
                     "delay": 1000
