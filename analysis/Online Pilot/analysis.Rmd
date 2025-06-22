@@ -18,6 +18,7 @@ library(tidyverse)
 library(lsr)
 library(corrplot)
 library(ggeffects)
+library(effsize)
 options(mc.cores = parallel::detectCores())
 theme_set(theme_classic()) 
 set.seed(123)
@@ -32,7 +33,8 @@ set.seed(123)
 
 # read in data
 
-filename = file.choose()
+# filename =  file.choose()
+filename = './data/raw.rds'
 df = readRDS(filename)
 
 df_mlq = df %>% 
@@ -43,7 +45,24 @@ df_awe = df %>%
   filter(!is.na(AWE_1)) %>% 
   select (., -(MLQ_1:MLQ_DO), -MLQ, -MLQ_Presence, -MLQ_Search)
 
+df_mlq_not_bad = df_mlq %>%
+  filter(ParticipantID != 145317216, 
+         ParticipantID != 150787919,
+         ParticipantID != 104528162,
+         ParticipantID != 121475818,
+         ParticipantID != 119803467,
+         ParticipantID != 150693715,
+         ParticipantID != 136011243,
+         ParticipantID != 151831974,
+         ParticipantID != 192762097
+         )
+
 ```
+
+```{r}
+
+```
+
 
 ```{r}
 
@@ -62,6 +81,112 @@ summary(regressor)
 
 ```{r}
 
+# df$stimulus_type = ifelse(df$Condition %in% c(0, 1), "Stimulus", "No-Stimulus")
+df_active = df %>% filter(Condition > 0)
+t.test(MLQ~Condition, data=df_active)
+
+
+cohen_d_result <- cohen.d(df_active$MLQ[df_active$Condition == 0], df_active$MLQ[df_active$Condition == 1], na.rm = TRUE)
+print(cohen_d_result)
+
+
+df$stimulus_type = ifelse(df$Condition %in% c(0, 1), "Stimulus", "No-Stimulus")
+
+t.test(MLQ~stimulus_type, data=df)
+
+
+cohen_d_result <- cohen.d(df$MLQ[df$Condition == 0], df$MLQ[df$Condition == 1], na.rm = TRUE)
+print(cohen_d_result)
+
+
+
+```
+
+```{r}
+
+df_minus_nausea = df %>% filter(ParticipantID != 145317216, 
+         ParticipantID != 150787919,
+         ParticipantID != 104528162,
+         ParticipantID != 121475818,
+         ParticipantID != 119803467,
+         ParticipantID != 150693715,
+         ParticipantID != 136011243,
+         ParticipantID != 151831974,
+         ParticipantID != 192762097
+         )
+
+
+df_active = df_minus_nausea %>% filter(Condition < 2)
+t.test(MLQ~Condition, data=df_active)
+
+df_minus_nausea$stimulus_type = ifelse(df_minus_nausea$Condition %in% c(0, 1), "Stimulus", "No-Stimulus")
+
+t.test(MLQ~stimulus_type, data=df_minus_nausea)
+
+
+cohen_d_result <- cohen.d(df_minus_nausea$MLQ[df_minus_nausea$Condition == 0], df_minus_nausea$MLQ[df_minus_nausea$Condition == 1], na.rm = TRUE)
+print(cohen_d_result)
+
+
+```
+
+
+```{r}
+
+df_active = df %>% filter(Condition < 2) %>% filter (AWE != 0)
+t.test(AWE~Condition, data=df_active)
+
+boxplot(boxplot(AWE~stimulus_type,data=df_active, main="Awe Per Condition",
+   xlab="Condition", ylab="AWE"))
+
+
+
+
+cohen_d_result <- cohen.d(df$AWE[df$Condition == 0], df$AWE[df$Condition == 1], na.rm = TRUE)
+print(cohen_d_result)
+
+
+
+```
+
+```{r}
+
+
+# model <- lm(outcome ~ predictor, data = your_data)
+# summary(model)
+
+
+model <- lm(MLQ ~ AWE, data = df)
+summary(model)
+
+# ggplot(df, aes(x = predictor, y = outcome)) +
+#   geom_point() +                              # scatterplot
+#   geom_smooth(method = "lm", se = TRUE) +     # regression line with confidence interval
+#   labs(x = "Predictor", y = "Outcome", title = "Scatterplot with Regression Line")
+
+ggplot(df, aes(x = ReligiousScale, y = MLQ)) +
+  geom_point() +                              # scatterplot
+  geom_smooth(method = "lm", se = TRUE) +     # regression line with confidence interval
+  labs(x = "Predictor", y = "Outcome", title = "Scatterplot with Regression Line")
+
+
+model <- glm(HasTakenPsychedelic ~ AWE, data = df, family = "binomial")
+summary(model)
+
+
+
+```
+
+
+
+
+```{r}
+
+
+
+boxplot(boxplot(MLQ~Condition,data=df, main="MLQ Per Condition",
+   xlab="Condition", ylab="MLQ"))
+
 boxplot(MLQ~Condition,data=df_mlq, main="MLQ Per Condition",
    xlab="Condition", ylab="MLQ")
 
@@ -74,18 +199,6 @@ boxplot(MLQ_Search~Condition,data=df_mlq, main="MLQ Search Per Condition",
 ```
 
 ```{r}
-
-df_mlq_not_bad = df_mlq %>%
-  filter(ParticipantID != 145317216, 
-         ParticipantID != 150787919,
-         ParticipantID != 104528162,
-         ParticipantID != 121475818,
-         ParticipantID != 119803467,
-         ParticipantID != 150693715,
-         ParticipantID != 136011243,
-         ParticipantID != 151831974,
-         ParticipantID != 192762097
-         )
 
 boxplot(MLQ~Condition,data=df_mlq_not_bad, main="MLQ Per Condition",
    xlab="Condition", ylab="MLQ")
@@ -212,13 +325,12 @@ mean(df_mlq_baseline$MLQ_5)
 
 ```{r}
 
-df %>% 
-  mutate(IsBeliever = if_else(ReligiousScale >= 50, 1, 0)) %>% 
-  ggplot() + 
-  geom_bar(aes(x=IsCorrect, fill=factor(IsBeliever))) + 
-  ggtitle(label = "MEQ Score vs Religiosity across both conditions",
-          subtitle = "(Inc. whether they got the answer right or not)") +
-  facet_wrap(~IsBelieverCondition, labeller = as_labeller(c("0" = "Non-believer Condition", "1" = "Believer Condition" )))
+# df %>%
+#   ggplot() +
+#   geom_bar(aes(x=IsCorrect, fill=factor(IsBeliever))) +
+#   ggtitle(label = "MEQ Score vs Religiosity across both conditions",
+#           subtitle = "(Inc. whether they got the answer right or not)") +
+#   facet_wrap(~IsBelieverCondition, labeller = as_labeller(c("0" = "Non-believer Condition", "1" = "Believer Condition" )))
 
 
 ```

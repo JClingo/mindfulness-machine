@@ -45,7 +45,11 @@ df = df_raw %>%
   mutate(AWE = select(., AWE_1:AWE_15) %>% rowSums(na.rm = TRUE)) %>%
   mutate(AWE_Time = select(., AWE_1:AWE_5) %>% rowSums(na.rm = TRUE)) %>% 
   mutate(AWE_SelfLoss = select(., AWE_5:AWE_10) %>% rowSums(na.rm = TRUE)) %>% 
-  mutate(AWE_Connectedness = select(., AWE_11:AWE_15) %>% rowSums(na.rm = TRUE))
+  mutate(AWE_Connectedness = select(., AWE_11:AWE_15) %>% rowSums(na.rm = TRUE)) %>% 
+  mutate(IsBeliever = if_else(ReligiousScale >= 50, 1, 0))
+
+df %>% 
+  mutate(IsBeliever = if_else(ReligiousScale >= 50, 1, 0)) 
 
 df$Gender = as.factor(df$Gender)
 df$Psychedelic = as.factor(df$Psychedelic)

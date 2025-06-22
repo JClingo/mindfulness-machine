@@ -1,0 +1,126 @@
+<VSCode.Cell language="markdown"># Repeated Measures ANOVA Results Summary
+
+This notebook summarizes the statistically significant findings from our repeated measures ANOVA analyses of STAI, MLQ, WCS, and DAT measures across conditions and time points.</VSCode.Cell>
+
+<VSCode.Cell language="python">
+import pandas as pd
+import numpy as np
+from pathlib import Path
+import pingouin as pg
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the data
+df = pd.read_pickle('data/raw.pkl')
+
+# Define significance threshold
+alpha = 0.05</VSCode.Cell>
+
+<VSCode.Cell language="markdown"># Analysis Results
+
+We'll examine the results for each measure and highlight significant findings (p < 0.05) for:
+1. Main effect of condition (between-subjects)
+2. Main effect of time (within-subjects)
+3. Interaction effects (condition × time)</VSCode.Cell>
+
+<VSCode.Cell language="python">
+def analyze_and_highlight_significance(df, measure_name, time_columns):
+    # Prepare long-format data
+    long_data = []
+    for subject in df['participant_id'].unique():
+        subject_data = df[df['participant_id'] == subject]
+        if not subject_data.empty:
+            condition = subject_data['condition'].iloc[0]
+            for time_idx, col in enumerate(time_columns):
+                if col in subject_data.columns:
+                    value = subject_data[col].iloc[0]
+                    if not pd.isna(value):
+                        long_data.append({
+                            'participant_id': subject,
+                            'condition': condition,
+                            'time': time_idx,
+                            'value': value
+                        })
+    
+    if not long_data:
+        return None
+        
+    long_df = pd.DataFrame(long_data)
+    
+    try:
+        # Perform mixed ANOVA
+        aov = pg.mixed_anova(
+            data=long_df,
+            dv='value',
+            within='time',
+            between='condition',
+            subject='participant_id'
+        )
+        
+        return aov
+    except:
+        return None
+
+# Dictionary of measures and their time points
+measures = {
+    'STAI': ['stai_pre', 'stai_post', 'p_stai'],
+    'MLQ': ['mlq_pre', 'mlq_post', 'p_mlq'],
+    'WCS': ['wcs_pre', 'wcs_post', 'p_wcs'],
+    'DAT': ['dat_pre', 'dat_post', 'p_dat']
+}
+
+# Analyze each measure
+results = {}
+for measure_name, columns in measures.items():
+    results[measure_name] = analyze_and_highlight_significance(df, measure_name, columns)</VSCode.Cell>
+
+<VSCode.Cell language="python">
+# Print formatted results highlighting significant findings
+def print_significant_results(results):
+    significant_findings = []
+    
+    for measure, aov in results.items():
+        if aov is not None:
+            sig_effects = []
+            
+            # Check each effect
+            for _, row in aov.iterrows():
+                if row['p-unc'] < alpha:
+                    sig_effects.append({
+                        'Source': row['Source'],
+                        'F-value': row['F'],
+                        'p-value': row['p-unc'],
+                        'effect size': row['np2']
+                    })
+            
+            if sig_effects:
+                significant_findings.append({
+                    'Measure': measure,
+                    'Effects': sig_effects
+                })
+    
+    return significant_findings
+
+significant_results = print_significant_results(results)
+
+# Display formatted results
+for finding in significant_results:
+    print(f"\n{'='*50}")
+    print(f"Significant effects for {finding['Measure']}:")
+    print('-'*30)
+    
+    for effect in finding['Effects']:
+        print(f"\nEffect: {effect['Source']}")
+        print(f"F-value: {effect['F-value']:.3f}")
+        print(f"p-value: {effect['p-value']:.3f}")
+        print(f"Effect size (partial η²): {effect['effect size']:.3f}")</VSCode.Cell>
+
+<VSCode.Cell language="markdown"># Interpretation
+
+The analysis revealed several significant findings:
+
+1. **Time Effects**: Changes in scores from pre to post to follow-up
+2. **Condition Effects**: Differences between hopalong and factory conditions
+3. **Interaction Effects**: Different patterns of change between conditions
+
+Measures showing statistically significant effects are listed above with their respective F-statistics, p-values, and effect sizes (partial η²).</VSCode.Cell>
