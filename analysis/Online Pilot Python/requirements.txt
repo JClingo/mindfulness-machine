@@ -1,0 +1,11 @@
+pandas
+numpy
+seaborn
+matplotlib
+scipy
+statsmodels
+pyjanitor
+pyreadr  # for reading R's RDS files
+ipykernel
+scikit-learn
+pingouin  # for advanced statistical analyses

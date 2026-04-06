@@ -13,6 +13,7 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import pingouin as pg
 from pathlib import Path
+from statsmodels.stats.power import TTestIndPower, FTestAnovaPower
 
 # Set random seed for reproducibility
 np.random.seed(123)
@@ -128,35 +129,35 @@ def calc_wilcoxon(source_df, condition, column_pre, column_post):
 
 # Run tests
 
-calc_wilcoxon(df_hopalong, 'hopalong', 'p_tas', 'tas')
-calc_wilcoxon(df_hopalong, 'hopalong', 'p_stai', 'stai_pre')
-calc_wilcoxon(df_hopalong, 'hopalong', 'p_phq', 'phq_pre')
-calc_wilcoxon(df_hopalong, 'hopalong', 'p_wemwbs', 'wemwbs')
-calc_wilcoxon(df_hopalong, 'hopalong', 'p_flourishing_scale', 'flourishing_scale')
-calc_wilcoxon(df_hopalong, 'hopalong', 'p_wcs', 'wcs_pre')
-calc_wilcoxon(df_hopalong, 'hopalong', 'p_mlq', 'mlq_pre')
-calc_wilcoxon(df_hopalong, 'hopalong', 'p_dat', 'dat_pre')
-calc_wilcoxon(df_hopalong, 'hopalong', 'p_dat_timing', 'dat_pre_timing')
+calc_wilcoxon(df_hopalong, 'hopalong', 'tas', 'p_tas')
+calc_wilcoxon(df_hopalong, 'hopalong', 'stai_pre', 'p_stai' )
+calc_wilcoxon(df_hopalong, 'hopalong', 'phq_pre', 'p_phq')
+calc_wilcoxon(df_hopalong, 'hopalong', 'wemwbs', 'p_wemwbs')
+calc_wilcoxon(df_hopalong, 'hopalong', 'flourishing_scale', 'p_flourishing_scale')
+calc_wilcoxon(df_hopalong, 'hopalong', 'wcs_pre', 'p_wcs', )
+calc_wilcoxon(df_hopalong, 'hopalong', 'mlq_pre', 'p_mlq')
+calc_wilcoxon(df_hopalong, 'hopalong', 'dat_pre', 'p_dat')
+calc_wilcoxon(df_hopalong, 'hopalong', 'dat_pre_timing', 'p_dat_timing')
 
-calc_wilcoxon(df_factory, 'factory', 'p_tas', 'tas')
-calc_wilcoxon(df_factory, 'factory', 'p_stai', 'stai_pre')
-calc_wilcoxon(df_factory, 'factory', 'p_phq', 'phq_pre')
-calc_wilcoxon(df_factory, 'factory', 'p_wemwbs', 'wemwbs')
-calc_wilcoxon(df_factory, 'factory', 'p_flourishing_scale', 'flourishing_scale')
-calc_wilcoxon(df_factory, 'factory', 'p_wcs', 'wcs_pre')
-calc_wilcoxon(df_factory, 'factory', 'p_mlq', 'mlq_pre')
-calc_wilcoxon(df_factory, 'factory', 'p_dat', 'dat_pre')
-calc_wilcoxon(df_factory, 'factory', 'p_dat_timing', 'dat_pre_timing')
+calc_wilcoxon(df_factory, 'factory', 'tas', 'p_tas')
+calc_wilcoxon(df_factory, 'factory', 'stai_pre', 'p_stai' )
+calc_wilcoxon(df_factory, 'factory', 'phq_pre', 'p_phq')
+calc_wilcoxon(df_factory, 'factory', 'wemwbs', 'p_wemwbs')
+calc_wilcoxon(df_factory, 'factory', 'flourishing_scale', 'p_flourishing_scale')
+calc_wilcoxon(df_factory, 'factory', 'wcs_pre', 'p_wcs', )
+calc_wilcoxon(df_factory, 'factory', 'mlq_pre', 'p_mlq')
+calc_wilcoxon(df_factory, 'factory', 'dat_pre', 'p_dat')
+calc_wilcoxon(df_factory, 'factory', 'dat_pre_timing', 'p_dat_timing')
 
-calc_wilcoxon(df, 'both', 'p_tas', 'tas')
-calc_wilcoxon(df, 'both', 'p_stai', 'stai_pre')
-calc_wilcoxon(df, 'both', 'p_phq', 'phq_pre')
-calc_wilcoxon(df, 'both', 'p_wemwbs', 'wemwbs')
-calc_wilcoxon(df, 'both', 'p_flourishing_scale', 'flourishing_scale')
-calc_wilcoxon(df, 'both', 'p_wcs', 'wcs_pre')
-calc_wilcoxon(df, 'both', 'p_mlq', 'mlq_pre')
-calc_wilcoxon(df, 'both', 'p_dat', 'dat_pre')
-calc_wilcoxon(df, 'both', 'p_dat_timing', 'dat_pre_timing')
+calc_wilcoxon(df, 'both', 'tas', 'p_tas')
+calc_wilcoxon(df, 'both', 'stai_pre', 'p_stai' )
+calc_wilcoxon(df, 'both', 'phq_pre', 'p_phq')
+calc_wilcoxon(df, 'both', 'wemwbs', 'p_wemwbs')
+calc_wilcoxon(df, 'both', 'flourishing_scale', 'p_flourishing_scale')
+calc_wilcoxon(df, 'both', 'wcs_pre', 'p_wcs', )
+calc_wilcoxon(df, 'both', 'mlq_pre', 'p_mlq')
+calc_wilcoxon(df, 'both', 'dat_pre', 'p_dat')
+calc_wilcoxon(df, 'both', 'dat_pre_timing', 'p_dat_timing')
 
 
 
@@ -246,15 +247,25 @@ for res, corrected_p in zip(results, corrected_pvals):
 
 # %%
 
-# One-way ANOVA for STAI
-
+# One-way ANOVA for STAI with detailed reporting
+print("\nOne-way ANOVA for STAI (model: stai_post ~ condition):")
 stai_anova = stats.f_oneway(
     df[df['condition'] == 'hopalong']['stai_post'],
     df[df['condition'] == 'factory']['stai_post']
 )
-print("\nOne-way ANOVA results for STAI:")
-print(f"F-statistic: {stai_anova.statistic:.4f}")
-print(f"p-value: {stai_anova.pvalue:.4f}")
+# Degrees of freedom
+n1 = df[df['condition'] == 'hopalong']['stai_post'].dropna().shape[0]
+n2 = df[df['condition'] == 'factory']['stai_post'].dropna().shape[0]
+print(f"Degrees of freedom: df1 = {n1 - 1}, df2 = {n2 - 1}")
+df1 = 1
+# total n - groups
+df2 = n1 + n2 - 2
+# Effect size: eta squared
+ss_between = ((df[df['condition'] == 'hopalong']['stai_post'].mean() - df['stai_post'].mean())**2 * n1 +
+              (df[df['condition'] == 'factory']['stai_post'].mean() - df['stai_post'].mean())**2 * n2)
+ss_total = ((df['stai_post'] - df['stai_post'].mean())**2).sum()
+eta_sq = ss_between / ss_total if ss_total > 0 else float('nan')
+print(f"F({df1}, {df2}) = {stai_anova.statistic:.4f}, p = {stai_anova.pvalue:.4f}, eta² = {eta_sq:.3f}")
 
 # %%
 
@@ -345,17 +356,22 @@ plt.suptitle('Absolute change vs Absorption', y=1.02, fontsize=16)
 plt.tight_layout()
 plt.savefig('plots/tas_combined_diff_plot.png', bbox_inches='tight', dpi=300)
 plt.close()
-
 # Check for Subpac effects
 for i in range(1, 13):
     var = f'vas_bowdle_post_{i}'
-    result = stats.ttest_ind(
-        df[df['hassubpac'] == True][var],
-        df[df['hassubpac'] == False][var]
-    )
+    group1 = df[df['hassubpac'] == True][var]
+    group2 = df[df['hassubpac'] == False][var]
+    result = stats.ttest_ind(group1, group2)
+    # Calculate Cohen's d
+    mean1, mean2 = group1.mean(), group2.mean()
+    var1, var2 = group1.var(), group2.var()
+    n1, n2 = len(group1), len(group2)
+    pooled_sd = np.sqrt(((n1 - 1)*var1 + (n2 - 1)*var2) / (n1 + n2 - 2))
+    cohens_d = (mean1 - mean2) / pooled_sd if pooled_sd > 0 else np.nan
     print(f"\nt-test results for {var} by Subpac:")
     print(f"t-statistic: {result.statistic:.4f}")
     print(f"p-value: {result.pvalue:.4f}")
+    print(f"Cohen's d: {cohens_d:.3f}")
 
 # Mixed effects model for STAI
 model = smf.mixedlm("stai_post ~ condition", data=df, groups="tas")
@@ -619,34 +635,263 @@ for measure, label in vas_measures.items():
     plt.savefig(f'plots/vas_bowdle_vs_{measure}.png', bbox_inches='tight', dpi=300)
     plt.close()
 
-# %%
-# VAS-Bowdle prediction of post-stimulus variability across MLQ, WCS, STAI
-print("\nTesting if VAS-Bowdle predicts post-stimulus variability (MLQ, WCS, STAI):")
+# %% WCS pre, post, follow-up comparison across conditions
+print("\nWCS Pre, Post, and Follow-up Comparison Across Conditions:")
 print("=" * 60)
 
-# Calculate per-participant post-stimulus variability (std across mlq_post, wcs_post, stai_post)
-df['post_var'] = df[['mlq_post', 'wcs_post', 'stai_post']].std(axis=1)
+# Prepare long-format data for WCS
+wcs_long = []
+for subject in df['participant_id'].unique():
+    subject_data = df[df['participant_id'] == subject]
+    if not subject_data.empty:
+        condition = subject_data['condition'].iloc[0]
+        for time_idx, col in enumerate(['wcs_pre', 'wcs_post', 'p_wcs']):
+            if col in subject_data.columns:
+                value = subject_data[col].iloc[0]
+                if not pd.isna(value):
+                    wcs_long.append({
+                        'participant_id': subject,
+                        'condition': condition,
+                        'time': ['pre', 'post', 'followup'][time_idx],
+                        'value': value
+                    })
 
-# Correlation
-corr, p_corr = stats.pearsonr(df['vas_bowdle'], df['post_var'])
-print(f"Correlation between VAS-Bowdle and post-stimulus variability: r = {corr:.3f}, p = {p_corr:.4f}")
+wcs_long_df = pd.DataFrame(wcs_long)
 
-# Linear regression
-X = df[['vas_bowdle']]
-y = df['post_var']
-reg = LinearRegression().fit(X, y)
-print(f"Regression coefficient (slope): {reg.coef_[0]:.3f}")
-print(f"Intercept: {reg.intercept_:.3f}")
-print(f"R^2: {reg.score(X, y):.3f}")
+# Print group means and SDs for each timepoint by condition
+summary = wcs_long_df.groupby(['condition', 'time'])['value'].agg(['mean', 'std', 'count'])
+print("\nGroup means and SDs for WCS:")
+print(summary)
 
-# Visualization
+# Mixed/repeated measures ANOVA
+try:
+    wcs_aov = pg.mixed_anova(
+        data=wcs_long_df,
+        dv='value',
+        within='time',
+        between='condition',
+        subject='participant_id'
+    )
+    print("\nMixed ANOVA Results for WCS:")
+    for idx, row in wcs_aov.iterrows():
+        # Robust extraction of dfs
+        ddof1 = row['ddof1'] if 'ddof1' in row else row.get('DF1', 'NA')
+        ddof2 = row['ddof2'] if 'ddof2' in row else row.get('DF2', 'NA')
+        print(f"{row['Source']}: F({ddof1}, {ddof2}) = {row['F']:.3f}, p = {row['p-unc']:.4f}, partial η² = {row['np2']:.3f}")
+    # Highlight significant effects
+    sig = wcs_aov[wcs_aov['p-unc'] < 0.05]
+    if not sig.empty:
+        print("\nSignificant effects:")
+        print(sig[['Source', 'F', 'p-unc', 'np2']])
+    else:
+        print("\nNo significant effects found.")
+except Exception as e:
+    print(f"\nWCS ANOVA error: {e}")
+
+# Visualization: line plot of means over time by condition
 plt.figure(figsize=(8, 6))
-sns.scatterplot(x=df['vas_bowdle'], y=df['post_var'])
-sns.regplot(x=df['vas_bowdle'], y=df['post_var'], scatter=False, color='red')
-plt.xlabel('VAS-Bowdle Score')
-plt.ylabel('Post-stimulus Variability (SD of MLQ, WCS, STAI)')
-plt.title('VAS-Bowdle vs Post-stimulus Variability')
+sns.pointplot(data=wcs_long_df, x='time', y='value', hue='condition',
+              dodge=True, markers=['o', 's'], capsize=.1, err_kws={'linewidth': 1.5})
+plt.title('WCS over Time by Condition')
+plt.ylabel('WCS Score')
+plt.xlabel('Timepoint')
+plt.legend(title='Condition')
 plt.tight_layout()
-plt.savefig('plots/vas_bowdle_post_variability.png', bbox_inches='tight', dpi=300)
+plt.savefig('plots/wcs_time_condition.png', bbox_inches='tight', dpi=300)
 plt.close()
 
+# Post-hoc: Between-condition t-tests at each timepoint for WCS
+print("\nBetween-condition t-tests for WCS at each timepoint:")
+timepoints = ['pre', 'post', 'followup']
+for t in timepoints:
+    group1 = wcs_long_df[(wcs_long_df['condition'] == 'hopalong') & (wcs_long_df['time'] == t)]['value']
+    group2 = wcs_long_df[(wcs_long_df['condition'] == 'factory') & (wcs_long_df['time'] == t)]['value']
+    t_stat, p_val = stats.ttest_ind(group1, group2, nan_policy='omit')
+    # Cohen's d
+    mean1, mean2 = group1.mean(), group2.mean()
+    var1, var2 = group1.var(), group2.var()
+    n1, n2 = len(group1), len(group2)
+    pooled_sd = np.sqrt(((n1 - 1)*var1 + (n2 - 1)*var2) / (n1 + n2 - 2)) if (n1 + n2 - 2) > 0 else np.nan
+    cohens_d = (mean1 - mean2) / pooled_sd if pooled_sd > 0 else np.nan
+    print(f"\nTimepoint: {t}")
+    print(f"Hopalong mean: {mean1:.3f} (n={n1}) | Factory mean: {mean2:.3f} (n={n2})")
+    print(f"t-statistic: {t_stat:.3f}, p-value: {p_val:.4f}, Cohen's d: {cohens_d:.3f}")
+
+# %% VMM pre, post, follow-up comparison across conditions
+print("\nVMM Pre, Post, and Follow-up Comparison Across Conditions:")
+print("=" * 60)
+
+# Prepare long-format data for VMM meaning, difficulty, and timing
+vmm_measures = ['vmm_meaning', 'vmm_difficulty', 'vmm_timing']
+vmm_long = []
+for subject in df['participant_id'].unique():
+    subject_data = df[df['participant_id'] == subject]
+    if not subject_data.empty:
+        condition = subject_data['condition'].iloc[0]
+        for vmm in vmm_measures:
+            for time_idx, col in enumerate([f'p_{vmm}', vmm]):
+                if col in subject_data.columns:
+                    value = subject_data[col].iloc[0]
+                    if not pd.isna(value):
+                        vmm_long.append({
+                            'participant_id': subject,
+                            'condition': condition,
+                            'vmm_type': vmm,
+                            'time': ['followup', 'post'][time_idx],
+                            'value': value
+                        })
+vmm_long_df = pd.DataFrame(vmm_long)
+
+# Print group means and SDs for each VMM score by condition and time
+summary = vmm_long_df.groupby(['vmm_type', 'condition', 'time'])['value'].agg(['mean', 'std', 'count'])
+print("\nGroup means and SDs for VMM scores:")
+print(summary)
+
+# Mixed/repeated measures ANOVA for each VMM score
+effects_summary = []
+for vmm in vmm_measures:
+    print(f"\nMixed ANOVA Results for {vmm}:")
+    sub_df = vmm_long_df[vmm_long_df['vmm_type'] == vmm]
+    try:
+        aov = pg.mixed_anova(
+            data=sub_df,
+            dv='value',
+            within='time',
+            between='condition',
+            subject='participant_id'
+        )
+        print(aov)
+        sig = aov[aov['p-unc'] < 0.05]
+        if not sig.empty:
+            print("Significant effects:")
+            print(sig[['Source', 'F', 'p-unc', 'np2']])
+            for _, row in sig.iterrows():
+                effects_summary.append({'vmm': vmm, 'Source': row['Source'], 'F': row['F'], 'p': row['p-unc'], 'np2': row['np2']})
+        else:
+            print("No significant effects found.")
+    except Exception as e:
+        print(f"{vmm} ANOVA error: {e}")
+
+# Summary of all significant effects
+if effects_summary:
+    print("\nSummary of significant effects across VMM scores:")
+    for eff in effects_summary:
+        print(f"{eff['vmm']} - {eff['Source']}: F = {eff['F']:.3f}, p = {eff['p']:.4f}, partial η² = {eff['np2']:.3f}")
+else:
+    print("\nNo significant effects found for VMM scores.")
+
+# Visualization: line plots for each VMM score over time by condition
+for vmm in vmm_measures:
+    plt.figure(figsize=(8, 6))
+    sub_df = vmm_long_df[vmm_long_df['vmm_type'] == vmm]
+    sns.pointplot(data=sub_df, x='time', y='value', hue='condition',
+                  dodge=True, markers=['o', 's'], capsize=.1, err_kws={'linewidth': 1.5})
+    plt.title(f'{vmm.replace("_", " ").title()} over Time by Condition')
+    plt.ylabel(f'{vmm.replace("_", " ").title()}')
+    plt.xlabel('Timepoint')
+    plt.legend(title='Condition')
+    plt.tight_layout()
+    plt.savefig(f'plots/{vmm}_time_condition.png', bbox_inches='tight', dpi=300)
+    plt.close()
+
+# %% Test interaction between VMM meaning and TAS scores
+print("\nTesting interaction between VMM meaning and TAS scores:")
+print("=" * 60)
+
+# Mixed effects model: vmm_meaning ~ tas * condition
+try:
+    model = smf.mixedlm("vmm_meaning ~ tas * condition", data=df, groups="participant_id")
+    result = model.fit()
+    print(result.summary())
+    # Extract and print interaction effect
+    if 'tas:condition[T.hopalong]' in result.params.index or 'tas:condition[T.factory]' in result.params.index:
+        for cond in df['condition'].unique():
+            key = f'tas:condition[T.{cond}]'
+            if key in result.params.index:
+                print(f"Interaction term for tas × {cond}: coef = {result.params[key]:.4f}, p = {result.pvalues[key]:.4f}")
+    else:
+        print("No explicit tas:condition interaction term found in model.")
+except Exception as e:
+    print(f"Error fitting mixed effects model: {e}")
+
+# Visualization: interaction plot
+plt.figure(figsize=(8, 6))
+sns.lmplot(data=df, x='tas', y='vmm_meaning', hue='condition',
+           markers=['o', 's'], aspect=1.2, height=6)
+plt.title('Interaction: TAS × Condition on VMM Meaning')
+plt.xlabel('TAS Score')
+plt.ylabel('VMM Meaning')
+plt.tight_layout()
+plt.savefig('plots/vmm_meaning_tas_condition_interaction.png', bbox_inches='tight', dpi=300)
+plt.close()
+
+
+# %%
+
+
+print("\nTesting interaction between VMM meaning and STAI scores:")
+print("=" * 60)
+
+# Mixed effects model: vmm_meaning ~ stai_post * condition
+try:
+    model = smf.mixedlm("vmm_meaning ~ stai_post * condition", data=df, groups="participant_id")
+    result = model.fit()
+    print(result.summary())
+    # Extract and print interaction effect
+    if 'stai_post:condition[T.hopalong]' in result.params.index or 'stai_post:condition[T.factory]' in result.params.index:
+        for cond in df['condition'].unique():
+            key = f'stai_post:condition[T.{cond}]'
+            if key in result.params.index:
+                print(f"Interaction term for stai_post × {cond}: coef = {result.params[key]:.4f}, p = {result.pvalues[key]:.4f}")
+    else:
+        print("No explicit stai_post:condition interaction term found in model.")
+except Exception as e:
+    print(f"Error fitting mixed effects model: {e}")
+
+# Visualization: interaction plot
+sns.lmplot(data=df, x='stai_post', y='vmm_meaning', hue='condition',
+           markers=['o', 's'], aspect=1.2, height=6)
+plt.title('Interaction: STAI × Condition on VMM Meaning')
+plt.xlabel('STAI Post Score')
+plt.ylabel('VMM Meaning')
+plt.tight_layout()
+plt.savefig('plots/vmm_meaning_stai_condition_interaction.png', bbox_inches='tight', dpi=300)
+plt.close()
+
+
+# %% Power Analyses for Main Measures
+from statsmodels.stats.power import TTestIndPower, FTestAnovaPower
+
+print("\nPower Analyses for Main Measures:")
+print("=" * 60)
+
+# Example: Power for between-group t-test (e.g., STAI post)
+# Replace these with your observed Cohen's d values for each measure
+observed_effect_sizes = {
+    'stai_post': 1,  # Example value, replace with your observed Cohen's d
+    'mlq_post': 1,
+    'wcs_post': 1,
+    'vmm_meaning': 1
+}
+
+n1 = df[df['condition'] == 'hopalong'].shape[0]
+n2 = df[df['condition'] == 'factory'].shape[0]
+alpha = 0.05
+
+ttest_power = TTestIndPower()
+for measure, d in observed_effect_sizes.items():
+    power = ttest_power.solve_power(effect_size=d, nobs1=n1, ratio=n2/n1, alpha=alpha, alternative='two-sided')
+    print(f"{measure}: n1={n1}, n2={n2}, d={d:.2f}, power={power:.3f}")
+
+# Example: Power for one-way ANOVA (e.g., STAI post by condition)
+anova_power = FTestAnovaPower()
+for measure, d in observed_effect_sizes.items():
+    # Convert Cohen's d to f (f = d / 2)
+    f = d / 2
+    n_total = n1 + n2
+    power = anova_power.solve_power(effect_size=f, nobs=n_total, k_groups=2, alpha=alpha)
+    print(f"{measure} (ANOVA): n={n_total}, f={f:.2f}, power={power:.3f}")
+
+print("\nNote: Replace effect sizes with your observed values for more accurate power estimates.")
+
+# %%
